@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<head>
+    <title>Edit Hold Type</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <h2>Edit Hold Type</h2>
+    <form id="updateHoldTypeForm">
+        <input type="hidden" id="hold_type_id" value="{{ hold_type[0] }}">
+        <label for="edit_hold_type">Hold Type:</label>
+        <input type="text" id="edit_hold_type" name="hold_type" value="{{ hold_type[1] }}" required>
+        <button type="submit">Update</button>
+    </form>
+</body>
+
+<script>
+    $(document).ready(function () {
+        $('#updateHoldTypeForm').submit(function (e) {
+            e.preventDefault();
+
+            const holdTypeId = $('#hold_type_id').val();
+            const newHoldType = $('#edit_hold_type').val().trim();
+
+            if (!/^[A-Za-z]/.test(newHoldType)) {
+                alert('Hold Type must start with a letter.');
+                return;
+            }
+
+            $.ajax({
+                url: '/update_hold_type/' + holdTypeId,
+                method: 'POST',
+                data: { hold_type: newHoldType },
+                success: function (response) {
+                    alert(response.message || 'Hold Type updated successfully!');
+                    location.reload();
+                },
+                error: function (xhr) {
+                    const errMsg = xhr.responseJSON?.message || 'Something went wrong!';
+                    alert('Error: ' + errMsg);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

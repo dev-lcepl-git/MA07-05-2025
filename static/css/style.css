@@ -1,0 +1,391 @@
+ /* General styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* Header styling */
+h1 {
+    color: back;
+    text-align: center;
+}
+h2 {
+    color: #0056b3;
+    text-align: center;
+}
+h3 {
+    color: #0056b3;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #ddd;
+}
+
+
+
+/* Form styling */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+
+
+form input[type="text"], form input[type="number"], form input[type="date"],form input[type="email"], form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+form textarea {
+    resize: vertical;
+}
+
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Style the <h1> elements to display inline */
+h1 {
+  display: inline-block;
+  margin-right: 10px; /* Spacing between buttons */
+}
+
+/* Style the <a> tags to look like buttons */
+.button {
+  text-decoration: none; /* Remove underline */
+  padding: 10px 20px; /* Add padding for size */
+  background-color: #4CAF50; /* Green background color */
+  color: white; /* White text */
+  font-size: 16px; /* Font size */
+  border-radius: 5px; /* Rounded corners */
+  border: none; /* Remove default border */
+  cursor: pointer; /* Cursor style */
+  transition: background-color 0.3s ease; /* Smooth transition for hover */
+}
+
+/* Change background color on hover */
+.button:hover {
+  background-color: #45a049;
+}
+
+/* Style for the Back Button */
+.back-button {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-button:hover {
+    background-color: darkred;
+}
+
+/* Styling for the select dropdown */
+select {
+    width: 100%; /* Use full width for better responsiveness */
+    padding: 12px 15px; /* Increased padding for better spacing */
+    margin: 10px 0; /* Spacing above and below */
+    border: 1px solid #ccc; /* Border color */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 14px; /* Font size for text */
+    background-color: #fff; /* White background */
+    box-sizing: border-box; /* Ensures padding and border are included in width */
+    appearance: none; /* Remove default dropdown arrow for custom styling */
+}
+
+/* Custom dropdown arrow */
+select::-ms-expand {
+    display: none; /* Remove the default arrow for IE/Edge */
+}
+
+select:focus {
+    outline: none; /* Remove outline when focused */
+    border-color: #4CAF50; /* Change border color when focused */
+}
+
+/* Option styling for the select */
+select option {
+    padding: 12px 15px; /* Padding for each option */
+    font-size: 14px; /* Font size */
+}
+
+/* Style the placeholder (default) option */
+option[disabled] {
+    color: #aaa; /* Light grey color for disabled option */
+    font-style: italic; /* Italicize the disabled option */
+}
+
+/* Label styling */
+label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+}
+
+
+
+
+.save-button {
+    background-color: Green;
+    color: white;
+    padding: 15px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    display:flex;
+    justify-content: center;
+    align-item: center;
+    margin: 20px;
+    text-align: center;
+
+}
+
+.save-button:hover {
+    background-color: darkGreen;
+}
+
+
+.success-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+}
+.success-popup i {
+            color: green;
+            font-size: 30px;
+            margin-right: 10px;
+}
+
+ .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+ }
+
+
+ .icon {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    }
+
+    .icon:hover {
+        transform: scale(1.5);
+        opacity: 0.8;
+    }
+
+    .edit-icon:hover {
+        filter: drop-shadow(0 0 5px #007bff); /* Blue glow for edit */
+    }
+
+    .delete-icon:hover {
+        filter: drop-shadow(0 0 5px #ff0000); /* Red glow for delete */
+    }
+
+    /* Search Bar Container */
+.search-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Search Bar Input */
+#searchBar {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+    transition: 0.3s;
+}
+
+/* Search Bar Focus Effect */
+#searchBar:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+
+
+
+
+/* Center the buttons and apply consistent styling */
+.button-container {
+    display: flex;
+    justify-content: center; /* Center buttons horizontally */
+    gap: 10px; /* Space between buttons */
+    margin-top: 20px; /* Add some top margin */
+}
+
+.action-button {
+    background-color: #007BFF; /* Blue background */
+    color: white; /* White text */
+    padding: 15px 30px; /* Larger padding for bigger buttons */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 18px; /* Larger font size */
+    text-align: center; /* Center text */
+    text-decoration: none; /* Remove underline */
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+}
+
+.action-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+#addStateForm, #stateTable {
+    display: none; /* Initially hide both the form and the table */
+}
+
+/* Success Popup */
+.success-popup {
+    display: none;
+    color: green;
+    font-size: 1.2em;
+    margin-top: 10px;
+}
+
+/* Sorting buttons */
+.sortable .sort-buttons {
+    margin-left: 5px;
+}
+
+
+.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+.sort-buttons a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            margin-left: 5px;
+            margin-right: 5px;
+}
+.sort-buttons a:hover {
+            text-decoration: underline;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+
+
+
+
+span .sort-desc:hover{
+cursor: pointer;
+}
+
+span .sort-asc:hover{
+cursor: pointer;
+}
+.sortable select {
+    background-color: #007BFF; /* Blue background */
+    color: white; /* White text */
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none; /* Remove default browser styling */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-caret-down-fill' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658c-.566-.63-.106-1.658.753-1.658h9.592c.86 0 1.32 1.027.753 1.658L8.753 11.14a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+
+.sortable select:focus {
+    outline: none;
+    background-color: #0056b3; /* Darker blue on focus */
+}
+.download-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+        }

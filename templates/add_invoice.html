@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Add Invoice</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/invoice.css') }}">
+    <script src="{{ url_for('static', filename='js/invoice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/holdAmount.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/search_on_table.js') }}"></script>
+</head>
+<body>
+{% if success == 'true' %}
+<div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+    ✅ Invoice added successfully!
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="button-container">
+    <button id="addButton" class="action-button">Add</button>
+    <button id="displayButton" class="action-button">Display</button>
+</div>
+
+<div id="addForm" style="display: none;">
+    <h2>Add Invoice</h2>
+
+    <form id="invoiceForm" action="{{ url_for('add_invoice') }}" method="POST">
+        <div class="row1">
+            <div>
+                <label for="subcontractor">Subcontractor Name:</label>
+                <input type="text" id="subcontractor" name="subcontractor" required autocomplete="off"/>
+                <input type="hidden" id="subcontractor_id" name="subcontractor_id"/>
+                <div id="subcontractor_list"></div>
+            </div>
+        </div>
+
+        <div class="row2">
+            <div>
+                <label for="village">Village Name:</label>
+                <select id="village" name="village" required>
+                    <option value="">-- Select Village --</option>
+                    {% for village in villages %}
+                        <option value="{{ village.Village_Name }}">{{ village.Village_Name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="pmc_no">PMC No:</label>
+                <input type="text" id="pmc_no" name="pmc_no" required/>
+                <div id="pmc_no_list" class="autocomplete-list"></div>
+            </div>
+        </div>
+
+        <div class="row2">
+            <div>
+                <label for="work_type">Work Type:</label>
+                <input type="text" id="work_type" name="work_type" required/>
+            </div>
+            <div>
+                <label for="invoice_details">Invoice Details:</label>
+                <textarea id="invoice_details" name="invoice_details" required></textarea>
+            </div>
+        </div>
+
+        <div class="row2">
+            <div>
+                <label for="invoice_no">Invoice No:</label>
+                <input type="text" id="invoice_no" name="invoice_no" required/>
+            </div>
+            <div>
+                <label for="invoice_date">Invoice Date:</label>
+                <input type="date" id="invoice_date" name="invoice_date" required/>
+            </div>
+        </div>
+
+        <div class="row3">
+            <div>
+                <label for="basic_amount">Basic Amount:</label>
+                <input type="number" step="0.01" id="basic_amount" name="basic_amount" placeholder="₹ - 00.00" required/>
+            </div>
+            <div>
+                <label for="debit_amount">Debit Amount:</label>
+                <input type="number" step="0.01" id="debit_amount" name="debit_amount" placeholder="₹ - 00.00" required/>
+            </div>
+            <div>
+                <label for="after_debit_amount">After Debit Amount:</label>
+                <input type="number" step="0.01" id="after_debit_amount" name="after_debit_amount" placeholder="₹ - 00.00" required/>
+            </div>
+        </div>
+
+        <div class="row3">
+            <div>
+                <label for="amount">Amount:</label>
+                <input type="number" step="0.01" id="amount" name="amount" placeholder="₹ - 00.00" required/>
+            </div>
+            <div>
+                <label for="gst_amount">GST Amount:</label>
+                <input type="number" step="0.01" id="gst_amount" name="gst_amount" placeholder="₹ - 00.00" required/>
+            </div>
+            <div>
+                <label for="tds_amount">TDS Amount:</label>
+                <input type="number" step="0.01" id="tds_amount" name="tds_amount" placeholder="₹ - 00.00" required/>
+            </div>
+        </div>
+
+        <div class="row3">
+            <div>
+                <label for="sd_amount">SD Amount:</label>
+                <input type="number" step="0.01" id="sd_amount" name="sd_amount" placeholder="₹ - 00.00" required>
+            </div>
+            <div>
+                <label for="on_commission">On Commission:</label>
+                <input type="number" step="0.01" id="on_commission" name="on_commission" placeholder="₹ - 00.00" required>
+            </div>
+            <div>
+                <label for="hydro_testing">Hydro Testing:</label>
+                <input type="number" step="0.01" id="hydro_testing" name="hydro_testing" placeholder="₹ - 00.00" required>
+            </div>
+        </div>
+
+        <div class="hold-row">
+            <button type="button" id="add_hold_amount" class="button">+ Add Hold Amount</button>
+        </div>
+
+        <!-- Dynamically added hold amount fields -->
+        <div id="hold_amount_container"></div>
+
+        <div class="row2">
+            <div>
+                <label for="gst_sd_amount">GST SD Amount:</label>
+                <input type="number" step="0.01" id="gst_sd_amount" name="gst_sd_amount" placeholder="₹ - 00.00" required/>
+            </div>
+            <div>
+                <label for="final_amount">Final Amount:</label>
+                <input type="number" step="0.01" id="final_amount" name="final_amount" placeholder="₹ - 00.00" required/>
+            </div>
+        </div>
+
+        <button type="submit" class="button">Submit</button>
+    </form>
+</div>
+
+<div id="addTable" style="display: none;">
+    <!-- Invoice Table Section -->
+    <h2>Invoice List</h2>
+    {% if invoices %}
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th>Invoice Id</th>
+            <th>SubContractor Name</th>
+            <th>PMC No</th>
+            <th>Village</th>
+            <th>Work Type</th>
+            <th>Invoice Details</th>
+            <th>Invoice Date</th>
+            <th>Invoice No</th>
+            <th>Basic Amount</th>
+            <th>Debit Amount</th>
+            <th>After Debit Amount</th>
+            <th>Amount</th>
+            <th>GST Amount</th>
+            <th>TDS Amount</th>
+            <th>SD Amount</th>
+            <th>On Commission</th>
+            <th>Hydro Testing</th>
+            <th>GST SD Amount</th>
+            <th>Final Amount</th>
+            <th>Update</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for invoice in invoices %}
+        <tr>
+            <td>{{ invoice.Invoice_Id }}</td>
+            <td>{{ invoice.Contractor_Name }}</td>
+            <td>{{ invoice.PMC_No }}</td>
+            <td>{{ invoice.Village_Name or 'N/A' }}</td>
+            <td>{{ invoice.Work_Type }}</td>
+            <td>{{ invoice.Invoice_Details }}</td>
+            <td>{{ invoice.Invoice_Date }}</td>
+            <td>{{ invoice.Invoice_No }}</td>
+            <td>{{ invoice.Basic_Amount }}</td>
+            <td>{{ invoice.Debit_Amount }}</td>
+            <td>{{ invoice.After_Debit_Amount }}</td>
+            <td>{{ invoice.Amount }}</td>
+            <td>{{ invoice.GST_Amount }}</td>
+            <td>{{ invoice.TDS_Amount }}</td>
+            <td>{{ invoice.SD_Amount }}</td>
+            <td>{{ invoice.On_Commission }}</td>
+            <td>{{ invoice.Hydro_Testing }}</td>
+            <td>{{ invoice.GST_SD_Amount }}</td>
+            <td>{{ invoice.Final_Amount }}</td>
+            <td>
+                <a href="{{ url_for('edit_invoice', invoice_id=invoice.Invoice_Id) }}">
+                    <img src="{{ url_for('static', filename='images/icons/pen_blue_icon.png') }}" alt="Edit" class="icon">
+                </a>
+            </td>
+            <td>
+                <a href="{{ url_for('delete_invoice', invoice_id=invoice.Invoice_Id) }}"
+                   onclick="return confirm('Are you sure?')">
+                    <img src="{{ url_for('static', filename='images/icons/bin_red_icon.png') }}" alt="Delete" class="icon">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No invoices found.</p>
+    {% endif %}
+</div>
+
+<!-- Optional JS for auto-hiding flash -->
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+    }, 5000);
+</script>
+
+</body>
+
+{% endblock %}

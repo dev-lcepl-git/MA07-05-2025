@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Reconciliation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+<div class="sidebar">
+    <img src="https://lceplpmprod.btltech.xyz/assets/images/lcpl.png" alt="logo-image" class="logo">
+
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="#" class="nav-link active">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/upload_excel_file" class="nav-link">
+                <i class="fas fa-book"></i> Import Excel
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/report" class="nav-link">
+                <i class="fas fa-cog"></i> Report
+            </a>
+        </li>
+    </ul>
+    <div class="user-section">
+        <img src="{{ url_for('static', filename='images/icons/male_profile.jpg') }}" alt="User Avatar">
+        <div class="user-info">
+            <span>admin</span>
+        </div>
+    </div>
+</div>
+<div class="company-info">
+    <marquee behavior="scroll" direction="left">
+        <h2 class="company-name">Laxmi Civil Engineering Services Pvt. Ltd.</h2>
+    </marquee>
+    <p class="app-name">Payment Reconciliation</p>
+</div>
+<div class="content">
+    <div class="menu">
+        <div class="card">
+            <h2>Profile</h2>
+            <a class="btn" href="#">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>State</h2>
+            <a class="btn" href="/add_state">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>District</h2>
+            <a class="btn" href="/add_district">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>Blocks</h2>
+            <a class="btn" href="/add_block">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>Village</h2>
+            <a class="btn" href="/add_village">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>Sub-Contractor</h2>
+            <a class="btn" href="/subcontractor">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>Invoice</h2>
+            <a class="btn" href="/add_invoice">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>Payment</h2>
+            <a class="btn" href="/add_payment">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>GST Release</h2>
+            <a class="btn" href="/add_gst_release">Go ➜</a>
+        </div>
+
+        <div class="card">
+            <h2>Hold Types</h2>
+            <a class="btn" href="/add_hold_type">Go ➜</a>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMC Report</title>
+    <!--    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/subcontractor_report.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2>PMC Report</h2>
+
+    <div class="info">
+        <h2>Contractor Details</h2>
+        <div class="row2">
+            <div>
+                <label for="subcontractor">Subcontractor Name:</label>
+                <input type="text" id="subcontractor" name="subcontractor" value="{{ info.Contractor_Name }}"
+                       readonly/>
+            </div>
+            <div>
+                <label for="Address">Address :</label>
+                <textarea id="Address" name="Address" readonly>{{ info.Address }}</textarea>
+            </div>
+        </div>
+        <div class="row3">
+            <div>
+                <label for="PAN_No">PAN No :</label>
+                <input type="text" id="PAN_No" name="PAN_No" value="{{ info.PAN_No }}" readonly/>
+            </div>
+            <div>
+                <label for="Mobile_No">Mobile Number :</label>
+                <input type="text" id="Mobile_No" name="Mobile_No" value="{{ info.Mobile_No }}" readonly/>
+            </div>
+            <div>
+                <label for="Email">Email :</label>
+                <input type="text" id="Email" name="Email" value="{{ info.Email }}" readonly/>
+            </div>
+        </div>
+        <div class="row2">
+            <div>
+                <label for="GST_Registration_Type">GST Registration Type :</label>
+                <input type="text" id="GST_Registration_Type" name="GST_Registration_Type"
+                       value="{{ info.GST_Registration_Type }}" readonly/>
+
+            </div>
+            <div>
+                <label for="GST_No">GST No:</label>
+                <input type="text" id="GST_No" name="GST_No" value="{{ info.GST_No }}" readonly/>
+            </div>
+        </div>
+        <h2>PMC Report for PMC No: {{ info.PMC_No}}</h2>
+        <div class="row3">
+            <div>
+                <label for="State">State :</label>
+                <input type="text" id="State" name="State" value="{{ info.State_Name }}" readonly/>
+            </div>
+            <div>
+                <label for="District">District :</label>
+                <input type="text" id="District" name="District" value="{{ info.District_Name }}" readonly/>
+            </div>
+            <div>
+                <label for="Block">Block :</label>
+                <input type="text" id="Block" name="Block" value="{{ info.Block_Name }}" readonly/>
+            </div>
+        </div>
+        <div class="row2">
+            <div>
+                <label for="PMC_No">PMC No:</label>
+                <input type="text" id="PMC_No" name="PMC_No" value="{{ info.PMC_No }}" readonly/>
+            </div>
+            <div>
+                <label for="Village_Name">Village Name :</label>
+                <input type="text" id="Village_Name" name="Village_Name"
+                       value="{{ info.Village_Name.capitalize() }}" readonly/>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<h3>Invoice Details</h3>
+<table>
+    <thead>
+    <tr>
+        <th>PMC No</th>
+        <th>Village Name</th>
+        <th>Work Type</th>
+        <th>Invoice Details</th>
+        <th>Invoice Date</th>
+        <th>Invoice No</th>
+        <th>Basic Amount</th>
+        <th>Debit</th>
+        <th>After Debit Amt</th>
+        <th>GST (18%)</th>
+        <th>Amount</th>
+        <th>TDS (1%)</th>
+        <th>SD (5%)</th>
+        <th>On Commission</th>
+        <th>Hydro Testing</th>
+
+        <!-- Dynamic Hold Types -->
+        {% set hold_types = invoices | map(attribute='hold_type') | reject('none') | unique | list %}
+        {% for hold in hold_types %}
+        <th>{{ hold }}</th>
+        {% endfor %}
+
+        <th>GST SD (18%)</th>
+        <th>Final Amount</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if invoices %}
+    {% for invoice in invoices %}
+    <tr>
+        <td>{{ invoice.PMC_No }}</td>
+        <td>{{ invoice.Village_Name.capitalize() }}</td>
+        <td>{{ invoice.Work_Type }}</td>
+        <td>{{ invoice.Invoice_Details }}</td>
+        <td>{{ invoice.Invoice_Date }}</td>
+        <td>{{ invoice.Invoice_No }}</td>
+        <td>{{ invoice.Basic_Amount }}</td>
+        <td>{{ invoice.Debit_Amount }}</td>
+        <td>{{ invoice.After_Debit_Amount }}</td>
+        <td>{{ invoice.GST_Amount }}</td>
+        <td>{{ invoice.Amount }}</td>
+        <td>{{ invoice.TDS_Amount }}</td>
+        <td>{{ invoice.SD_Amount }}</td>
+        <td>{{ invoice.On_Commission }}</td>
+        <td>{{ invoice.Hydro_Testing }}</td>
+
+        <!-- Dynamic Hold Amounts -->
+        {% for hold in hold_types %}
+        <td>
+            {% if invoice.hold_type == hold %}
+            {{ invoice.hold_amount }}
+            {% else %}
+            0
+            {% endif %}
+        </td>
+        {% endfor %}
+
+        <td>{{ invoice.GST_SD_Amount }}</td>
+        <td>{{ invoice.Final_Amount }}</td>
+    </tr>
+
+    {% endfor %}
+    <tr>
+        <th colspan="6">Total</th>
+        <th>{{total["sum_invo_basic_amt"]}}</th>
+        <th>{{total["sum_invo_debit_amt"]}}</th>
+        <th>{{total["sum_invo_after_debit_amt"]}}</th>
+        <th>{{total["sum_invo_gst_amt"]}}</th>
+        <th>{{total["sum_invo_amt"]}}</th>
+        <th>{{total["sum_invo_tds_amt"]}}</th>
+        <th>{{total["sum_invo_ds_amt"]}}</th>
+        <th>{{total["sum_invo_on_commission"]}}</th>
+        <th>{{total["sum_invo_hydro_test"]}}</th>
+        {% set hold_types = invoices | map(attribute='hold_type') | unique | list %}
+        {% for hold in hold_types %}
+        <th>{{total["sum_invo_hold_amt"]}}</th>
+        {% endfor %}
+        <th>{{total["sum_invo_gst_sd_amt"]}}</th>
+        <th>{{total["sum_invo_final_amt"]}}</th>
+    </tr>
+
+    {% else %}
+    <tr>
+        <td colspan="{{ 17 + hold_types|length }}">No invoices found.</td>
+    </tr>
+    {% endif %}
+    </tbody>
+</table>
+
+
+<br>
+<h3>GST Release Note Details</h3>
+<table>
+    <thead>
+    <tr>
+        <th>PMC No</th>
+        <th>Invoice No</th>
+        <th>Basic Amount</th>
+        <th>Final Amount</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if gst_rel %}
+    {% for gst in gst_rel %}
+    <tr>
+        <td>{{ gst.pmc_no }}</td>
+        <td>{{ gst.invoice_no }}</td>
+        <td>{{ gst.basic_amount }}</td>
+        <td>{{ gst.final_amount }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <th colspan="2">Total</th>
+
+        <th>{{total["sum_gst_basic_amt"]}}</th>
+        <th>{{total["sum_gst_final_amt"]}}</th>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4">No GST release found.</td>
+    </tr>
+    {% endif %}
+    </tbody>
+</table>
+
+<br>
+<h3>Payment Details</h3>
+<table>
+    <thead>
+    <tr>
+        <th>PMC No</th>
+        <th>Invoice No</th>
+        <th>Amount</th>
+        <th>TDS Amount @ 1% on BASIC AMOUNT</th>
+        <th>Total Amount Paid</th>
+        <th>UTR</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if payments %}
+    {% for pay in payments %}
+    <tr>
+        <td>{{ pay.pmc_no }}</td>
+        <td>{{ pay.invoice_no }}</td>
+        <td>{{ pay.Payment_Amount }}</td>
+        <td>{{ pay.TDS_Payment_Amount }}</td>
+        <td>{{ pay.Total_amount }}</td>
+        <td>{{ pay.utr}}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <th colspan="2">Total</th>
+        <th>{{total["sum_pay_payment_amt"]}}</th>
+        <th>{{total["sum_pay_tds_payment_amt"]}}</th>
+        <th>{{total["sum_pay_total_amt"]}}</th>
+        <th></th>
+    </tr>
+    {% else %}
+
+    <tr>
+        <td colspan="6">No payment found.</td>
+    </tr>
+    {% endif %}
+
+    </tbody>
+</table>
+
+<a href="/download_pmc_report/{{ info.PMC_No}}">
+    <button class="download-btn">Download PMC Report</button>
+</a>
+</body>
+{% endblock %}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Payment Reconciliation{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+<body>
+<!-- Sidebar Toggle Button -->
+<button class="menu-icon" onclick="toggleSidebar()">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="/" class="nav-link active">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/upload_excel_file" class="nav-link">
+                <i class="fas fa-book"></i> Import Excel
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/report" class="nav-link">
+                <i class="fas fa-cog"></i> Report
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_state" class="nav-link">
+                <i class="fas fa-arrow-right"></i> State
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_district" class="nav-link">
+                <i class="fas fa-arrow-right"></i> District
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_block" class="nav-link">
+                <i class="fas fa-arrow-right"></i> Blocks
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_village" class="nav-link">
+                <i class="fas fa-arrow-right"></i> village
+            </a>
+        </li>
+        <li class="card">
+            <a href="/subcontractor" class="nav-link">
+                <i class="fas fa-arrow-right"></i> Sub-Contractor
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_invoice" class="nav-link">
+                <i class="fas fa-arrow-right"></i> Invoice
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_payment" class="nav-link">
+                <i class="fas fa-arrow-right"></i> Payment
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_gst_release" class="nav-link">
+                <i class="fas fa-arrow-right"></i> GST Release
+            </a>
+        </li>
+        <li class="card">
+            <a href="/add_hold_type" class="nav-link">
+                <i class="fas fa-arrow-right"></i> Hold Types
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="content">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- Sidebar Toggle Script -->
+<script>
+    function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("open");
+        document.getElementById("content").classList.toggle("shift");
+    }
+</script>
+</body>
+</html>

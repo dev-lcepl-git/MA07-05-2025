@@ -1,0 +1,171 @@
+ /* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 20px;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+/* Headings */
+h1, h2 {
+    color: #2c3e50;
+}
+
+/* File Information Section */
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul li {
+    background: #ecf0f1;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Error Messages */
+.errors {
+    background-color: #ffdddd;
+    border: 1px solid #ff4d4d;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.errors h2 {
+    color: #ff4d4d;
+}
+
+.error {
+    color: #d8000c;
+    font-weight: bold;
+}
+
+/* Table Styles */
+.table-container {
+    max-width: 100%;
+    overflow-x: auto; /* Allows horizontal scrolling */
+    margin-bottom: 20px;
+    border: 1px solid #ddd; /* Optional for better visibility */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    table-layout: auto;  /* Let the columns adjust based on content */
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    word-wrap: break-word; /* Prevents text from overflowing */
+}
+
+th {
+    background-color: #3498db;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Set input width to 100px */
+input[type="text"] {
+    width: 200px; /* Set a fixed width of 100px */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding is included in width calculation */
+    white-space: nowrap; /* Prevent line breaks */
+    overflow: hidden; /* Prevents overflow */
+    text-overflow: ellipsis; /* Shows ellipsis if the content is too long */
+}
+
+/* Buttons */
+button {
+    display: inline-block;
+    background-color: #27ae60;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    font-size: 16px;
+    width: 100%; /* Ensures button is centered */
+}
+
+.back-button {
+    display: inline-block;
+    background-color: #27ae60;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    font-size: 16px;
+    width: 10%; /* Ensures button is centered */
+}
+
+/* Hover Effects */
+button:hover, .back-button:hover {
+    background-color: #219150;
+}
+
+button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+/* Back Button */
+.back-button {
+    background-color: #e74c3c;
+}
+
+.back-button:hover {
+    background-color: #c0392b;
+}
+
+/* Center Save Data Button */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.save-button {
+    margin-top: 20px;
+    width: 50%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table-container {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    table {
+        width: 100%;
+        table-layout: auto;  /* Let the table adjust to fit its content */
+    }
+
+    input[type="text"] {
+        width: 100px; /* Fixed width of 100px */
+        padding: 6px; /* Smaller padding on mobile */
+    }
+
+    button, .back-button {
+        width: 100%;
+        text-align: center;
+    }
+}

@@ -1,0 +1,247 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* Header Styling */
+h1, h2, h3 {
+    color: #0056b3;
+    text-align: center;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #ddd;
+}
+
+/* Sort Dropdown */
+.sort-options {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid black;
+    padding: 5px;
+    z-index: 100;
+    width: 120px;
+    text-align: center;
+}
+
+.sort-options button {
+    display: block;
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.sort-options button:hover {
+    background-color: #f0f0f0;
+}
+
+/* Form Styling */
+form {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="number"],
+form input[type="date"],
+form input[type="email"],
+form textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+form textarea {
+    resize: vertical;
+}
+
+/* Button Styling */
+.button, form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.button:hover, form button:hover {
+    background-color: #0056b3;
+}
+
+/* Back Button */
+.back-button {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-button:hover {
+    background-color: darkred;
+}
+
+/* Success Alert */
+.success-alert {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #d4edda;
+    color: #155724;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.success-popup i {
+    color: green;
+    font-size: 30px;
+    margin-right: 10px;
+}
+
+/* Error Message */
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Table Icons */
+td img {
+    width: 20px;  /* Adjust as needed */
+    height: 20px; /* Adjust as needed */
+    transition: transform 0.3s ease; /* Smooth transition for hover effect */
+}
+
+td img:hover {
+    transform: scale(1.2); /* Slight zoom effect on hover */
+}
+
+/* Select Dropdown */
+select {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    background-color: #fff;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+/* Custom Dropdown Arrow */
+select::-ms-expand {
+    display: none;
+}
+
+select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+select option {
+    padding: 12px 15px;
+    font-size: 14px;
+}
+
+option[disabled] {
+    color: #aaa;
+    font-style: italic;
+}
+
+/* Save Button */
+.save-button {
+    background-color: green;
+    color: white;
+    padding: 15px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.save-button:hover {
+    background-color: darkgreen;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    form {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    table th, table td {
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .button, form button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
