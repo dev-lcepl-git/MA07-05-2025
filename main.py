@@ -16,7 +16,6 @@ app.secret_key = '9f2a1b8c4d6e7f0123456789abcdef01'
 
 str_pattern_reg = "^[A-Za-z ]+$"
 
-
 class ResponseHandler:
     @staticmethod
     def invalid_name(entity):
@@ -91,16 +90,16 @@ def add_state():
                 return json_response(ResponseHandler.invalid_name("state"), 400)
 
             try:
-                # cursor.execute("SELECT * FROM states WHERE State_Name = %s", (state_name,))
-                # if cursor.fetchone():
-                #     return json_response(ResponseHandler.already_exists("state"), 409)
-
-                cursor.callproc("CheckStateExists", (state_name,))
-                for data in cursor.stored_results():
-                    existing_state = data.fetchone()
-
-                if existing_state:
+                cursor.execute("SELECT * FROM states WHERE State_Name = %s", (state_name,))
+                if cursor.fetchone():
                     return json_response(ResponseHandler.already_exists("state"), 409)
+
+                # cursor.callproc("CheckStateExists", (state_name,))
+                # for data in cursor.stored_results():
+                #     existing_state = data.fetchone()
+                #
+                # if existing_state:
+                #     return json_response(ResponseHandler.already_exists("state"), 409)
 
                 # cursor.execute("call SaveState (%s)", (state_name,))
                 cursor.callproc("SaveState", (state_name,))
@@ -132,6 +131,7 @@ def add_state():
 def check_state():
     connection = config.get_db_connection()
 
+
     if connection:
         cursor = connection.cursor()
         state_name = request.json.get('state_Name', '').strip()
@@ -140,12 +140,12 @@ def check_state():
             return json_response(ResponseHandler.invalid_name("state"), 400)
 
         try:
-            # cursor.execute("SELECT * FROM states WHERE State_Name = %s", (state_name,))
-            # existing_state = cursor.fetchone()
+            cursor.execute("SELECT * FROM states WHERE State_Name = %s", (state_name,))
+            existing_state = cursor.fetchone()
 
-            cursor.callproc("CheckStateExists", (state_name,))
-            for data in cursor.stored_results():
-                existing_state = data.fetchone()
+            # cursor.callproc("CheckStateExists", (state_name,))
+            # for data in cursor.stored_results():
+            #     existing_state = data.fetchone()
 
             if existing_state:
                 return json_response(ResponseHandler.already_exists("state"), 409)
@@ -168,7 +168,7 @@ def deleteState(id):
 
     try:
         # cursor.execute("DELETE FROM states WHERE State_ID = %s", (id,))
-        cursor.callproc('DeleteState', (id,))
+        cursor.callproc('DeleteState',(id,))
         connection.commit()
         # For API response
         # return json_response(ResponseHandler.delete_success("state"), 200)
@@ -199,7 +199,7 @@ def editState(id):
 
         try:
             # cursor.execute("UPDATE states SET State_Name = %s WHERE State_ID = %s", (state_name, id))
-            cursor.callproc("UpdateStateById", (id, state_name))
+            cursor.callproc("UpdateStateById",(id,state_name))
             connection.commit()
             return redirect(url_for('add_state'))
         except mysql.connector.Error as e:
@@ -210,11 +210,8 @@ def editState(id):
             connection.close()
 
     try:
-        # cursor.execute("SELECT * FROM states WHERE State_ID = %s", (id,))
-        # state = cursor.fetchone()
-        cursor.callproc("GetStateByID", (id,))
-        for result in cursor.stored_results():
-            state = result.fetchone()
+        cursor.execute("SELECT * FROM states WHERE State_ID = %s", (id,))
+        state = cursor.fetchone()
         if state is None:
             return "State not found", 404
     except mysql.connector.Error as e:
@@ -258,12 +255,9 @@ def add_district():
                 return json_response(ResponseHandler.invalid_name("district"), 400)
 
             try:
-                # cursor.execute("SELECT * FROM districts WHERE District_Name = %s AND State_Id = %s",
-                #                (district_name, state_id))
-                cursor.callproc("GetDistrictByNameAndState", (district_name, state_id))
-                for data in cursor.stored_results():
-                    rs = data.fetchone()
-                if rs:
+                cursor.execute("SELECT * FROM districts WHERE District_Name = %s AND State_Id = %s",
+                               (district_name, state_id))
+                if cursor.fetchone():
                     return json_response(ResponseHandler.already_exists("district"), 409)
 
                 cursor.callproc('SaveDistrict', (district_name, state_id))
@@ -305,12 +299,9 @@ def check_district():
             return json_response(ResponseHandler.invalid_name("district"), 400)
 
         try:
-            # cursor.execute("SELECT * FROM districts WHERE District_Name = %s AND State_Id = %s",
-            #                (district_name, state_id))
-            # existing_district = cursor.fetchone()
-            cursor.callproc("GetDistrictByNameAndState", (district_name, state_id,))
-            for result in cursor.stored_results():
-                existing_district = result.fetchone()
+            cursor.execute("SELECT * FROM districts WHERE District_Name = %s AND State_Id = %s",
+                           (district_name, state_id))
+            existing_district = cursor.fetchone()
 
             if existing_district:
                 return json_response(ResponseHandler.already_exists("district"), 409)
@@ -334,7 +325,7 @@ def delete_district(district_id):
         cursor = connection.cursor()
         try:
             # cursor.execute("DELETE FROM districts WHERE District_id = %s", (district_id,))
-            cursor.callproc("DeleteDistrict", (district_id,))
+            cursor.callproc("DeleteDistrict",(district_id,))
             connection.commit()
         except mysql.connector.Error as e:
             print(f"Error deleting district: {e}")
@@ -370,11 +361,8 @@ def edit_district(district_id):
 
         # Retrieve district info
         try:
-            # cursor.execute("SELECT District_Name, State_Id FROM districts WHERE District_id = %s", (district_id,))
-            # districtdata = cursor.fetchone()
-            cursor.callproc("GetDistrictDataByID", (district_id,))
-            for rs in cursor.stored_results():
-                districtdata = rs.fetchone()
+            cursor.execute("SELECT District_Name, State_Id FROM districts WHERE District_id = %s", (district_id,))
+            districtdata = cursor.fetchone()
         except mysql.connector.Error as e:
             print(f"Error fetching district data: {e}")
             return ResponseHandler.fetch_failure("district"), 500
@@ -396,8 +384,6 @@ def edit_district(district_id):
             return redirect('/add_district')
 
     return render_template('edit_district.html', districtdata=districtdata, states=states)
-
-
 # --------- end District controller -------------
 
 # ------------------------- Block controller ------------------------------------------
@@ -428,12 +414,9 @@ def add_block():
                 return json_response(ResponseHandler.invalid_name("block"), 400)
 
             try:
-                # cursor.execute("SELECT * FROM blocks WHERE Block_Name = %s AND District_id = %s",
-                #                (block_name, district_id))
-                # existing_block = cursor.fetchone()
-                cursor.callproc("GetBlockByNameAndDistrict", (block_name, district_id,))
-                for rs in cursor.stored_results():
-                    existing_block = rs.fetchone()
+                cursor.execute("SELECT * FROM blocks WHERE Block_Name = %s AND District_id = %s",
+                               (block_name, district_id))
+                existing_block = cursor.fetchone()
 
                 if existing_block:
                     return json_response(ResponseHandler.already_exists("block"), 409)
@@ -479,11 +462,8 @@ def check_block():
     if not re.match(str_pattern_reg, block_name):
         return json_response(ResponseHandler.invalid_name("block"), 400)
 
-    # cursor.execute("SELECT * FROM blocks WHERE Block_Name = %s AND District_id = %s", (block_name, district_id))
-    # existing_block = cursor.fetchone()
-    cursor.callproc("GetBlockByNameAndDistrict", (block_name, district_id))
-    for rs in cursor.stored_results():
-        existing_block = rs.fetchone()
+    cursor.execute("SELECT * FROM blocks WHERE Block_Name = %s AND District_id = %s", (block_name, district_id))
+    existing_block = cursor.fetchone()
 
     if existing_block:
         return json_response(ResponseHandler.already_exists("block"), 409)
@@ -557,22 +537,16 @@ def edit_block(block_id):
         cursor = connection.cursor()
         # Retrieve all states
         try:
-            # cursor.execute("SELECT State_ID, State_Name FROM states")
-            # states = cursor.fetchall()
-            cursor.callproc("GetAllStates")
-            for rs in cursor.stored_results():
-                states = rs.fetchall()
+            cursor.execute("SELECT State_ID, State_Name FROM states")
+            states = cursor.fetchall()
         except mysql.connector.Error as e:
             print(f"Error fetching states: {e}")
             return "Failed to fetch states", 500
 
         # Retrieve block data
         try:
-            # cursor.execute("SELECT Block_Name, District_id FROM blocks WHERE Block_Id = %s", (block_id,))
-            # block_data = cursor.fetchone()
-            cursor.callproc("GetBlockDataByID", (block_id,))
-            for rs in cursor.stored_results():
-                block_data = rs.fetchone()
+            cursor.execute("SELECT Block_Name, District_id FROM blocks WHERE Block_Id = %s", (block_id,))
+            block_data = cursor.fetchone()
         except mysql.connector.Error as e:
             print(f"Error fetching block data: {e}")
             return "Failed to fetch block data", 500
@@ -582,9 +556,8 @@ def edit_block(block_id):
             block_name = request.form['block_Name']
             district_id = request.form['district_Id']
             try:
-                # cursor.execute("UPDATE blocks SET Block_Name = %s, District_id = %s WHERE Block_Id = %s",
-                #                (block_name, district_id, block_id))
-                cursor.callproc("UpdateBlockById", (block_name, district_id, block_id,))
+                cursor.execute("UPDATE blocks SET Block_Name = %s, District_id = %s WHERE Block_Id = %s",
+                               (block_name, district_id, block_id))
                 connection.commit()
                 flash("Block updated successfully!", "success")
                 return redirect(url_for('edit_block', block_id=block_id))
@@ -594,16 +567,14 @@ def edit_block(block_id):
 
         # Retrieve districts for the dropdown
         try:
-            # cursor.execute("SELECT District_id, District_Name FROM districts")
-            # districts = cursor.fetchall()
-            cursor.callproc("GetAllDistrictsData")
-            for rs in cursor.stored_results():
-                districts = rs.fetchall()
+            cursor.execute("SELECT District_id, District_Name FROM districts")
+            districts = cursor.fetchall()
         except mysql.connector.Error as e:
             print(f"Error fetching districts: {e}")
             return "Failed to fetch districts", 500
 
         return render_template('edit_block.html', block_data=block_data, states=states, districts=districts)
+
 
 
 # delete block by id
@@ -696,11 +667,9 @@ def add_village():
                 return json_response(ResponseHandler.invalid_name("village"), 400)
 
             # Check if the village already exists in the block
-            # cursor.execute("SELECT * FROM villages WHERE Village_Name = %s AND Block_Id = %s", (village_name, block_id))
-            # existing_village = cursor.fetchone()
-            cursor.callproc("GetVillageByNameAndBlock", (village_name, block_id,))
-            for rs in cursor.stored_results():
-                existing_village = rs.fetchone()
+            cursor.execute("SELECT * FROM villages WHERE Village_Name = %s AND Block_Id = %s", (village_name, block_id))
+            existing_village = cursor.fetchone()
+
             if existing_village:
                 return json_response(ResponseHandler.already_exists("village"), 409)
 
@@ -728,11 +697,8 @@ def get_blocks(district_id):
     blocks = []
 
     try:
-        # cursor.execute("SELECT Block_Id, Block_Name FROM blocks WHERE District_id = %s", (district_id,))
-        # blocks = cursor.fetchall()
-        cursor.callproc("GetBlocksByDistrict", (district_id,))
-        for rs in cursor.stored_results():
-            blocks = rs.fetchall()
+        cursor.execute("SELECT Block_Id, Block_Name FROM blocks WHERE District_id = %s", (district_id,))
+        blocks = cursor.fetchall()
     except mysql.connector.Error as e:
         print(f"Error fetching blocks: {e}")
         return json_response({"error": "Failed to fetch blocks"}, 500)
@@ -759,11 +725,8 @@ def check_village():
     if not block_id or not village_name:
         return json_response({'status': 'error', 'message': 'Block and Village Name are required!'}, 400)
 
-    # cursor.execute("SELECT * FROM villages WHERE Village_Name = %s AND Block_Id = %s", (village_name, block_id))
-    # existing_village = cursor.fetchone()
-    cursor.callproc("GetVillageByNameAndBlocks", (village_name, block_id))
-    for rs in cursor.stored_results():
-        existing_village = rs.fetchone()
+    cursor.execute("SELECT * FROM villages WHERE Village_Name = %s AND Block_Id = %s", (village_name, block_id))
+    existing_village = cursor.fetchone()
 
     cursor.close()
     connection.close()
@@ -832,18 +795,13 @@ def edit_village(village_id):
 
     try:
         cursor = connection.cursor()
-        # # Fetch village details
-        # cursor.execute("SELECT Village_Name, Block_Id FROM villages WHERE Village_Id = %s", (village_id,))
-        # village_data = cursor.fetchone()
-        cursor.callproc("GetVillageDetailsById", (village_id,))
-        for rs in cursor.stored_results():
-            village_data = rs.fetchone()
+        # Fetch village details
+        cursor.execute("SELECT Village_Name, Block_Id FROM villages WHERE Village_Id = %s", (village_id,))
+        village_data = cursor.fetchone()
+
         # Fetch all blocks for dropdown
-        # cursor.execute("SELECT Block_Id, Block_Name FROM blocks")
-        # blocks = cursor.fetchall()
-        cursor.callproc('GetAllBlocks')
-        for result in cursor.stored_results():
-            blocks = result.fetchall()
+        cursor.execute("SELECT Block_Id, Block_Name FROM blocks")
+        blocks = cursor.fetchall()
 
         if request.method == 'POST':
             village_name = request.form['Village_Name']
@@ -913,11 +871,8 @@ def add_invoice():
             print("village name", village_name)
 
             # Query the database to get the corresponding Village_Id based on the village name
-            # cursor.execute("SELECT Village_Id FROM villages WHERE Village_Name = %s", (village_name,))
-            # village_result = cursor.fetchone()
-            cursor.callproc("GetVillageIdByName", (village_name,))
-            for rs in cursor.stored_results():
-                village_result = rs.fetchone()
+            cursor.execute("SELECT Village_Id FROM villages WHERE Village_Name = %s", (village_name,))
+            village_result = cursor.fetchone()
 
             if not village_result:
                 return jsonify({"status": "error", "message": f"Village '{village_name}' not found"}), 400
@@ -942,42 +897,29 @@ def add_invoice():
             gst_sd_amount = request.form.get('gst_sd_amount')
             final_amount = request.form.get('final_amount')
 
-            # insert_invoice_query = '''
-            #     INSERT INTO invoice (
-            #         PMC_No, Village_Id, Work_Type, Invoice_Details, Invoice_Date, Invoice_No,
-            #         Basic_Amount, Debit_Amount, After_Debit_Amount, Amount, GST_Amount, TDS_Amount,
-            #         SD_Amount, On_Commission, Hydro_Testing, GST_SD_Amount, Final_Amount
-            #     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            # '''
-            # invoice_values = (
-            #     pmc_no, village_id, work_type, invoice_details, invoice_date, invoice_no,
-            #     basic_amount, debit_amount, after_debit_amount, amount, gst_amount, tds_amount,
-            #     sd_amount, on_commission, hydro_testing, gst_sd_amount, final_amount
-            # )
-            # cursor.execute(insert_invoice_query, invoice_values)
-            # connection.commit()
-            # invoice_id = cursor.lastrowid
-            cursor.callproc('InsertInvoice', [
+            insert_invoice_query = '''
+                INSERT INTO invoice (
+                    PMC_No, Village_Id, Work_Type, Invoice_Details, Invoice_Date, Invoice_No, 
+                    Basic_Amount, Debit_Amount, After_Debit_Amount, Amount, GST_Amount, TDS_Amount, 
+                    SD_Amount, On_Commission, Hydro_Testing, GST_SD_Amount, Final_Amount
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            '''
+            invoice_values = (
                 pmc_no, village_id, work_type, invoice_details, invoice_date, invoice_no,
                 basic_amount, debit_amount, after_debit_amount, amount, gst_amount, tds_amount,
-                sd_amount, on_commission, hydro_testing, gst_sd_amount, final_amount])
-
-            for result in cursor.stored_results():
-                invoice_id = result.fetchone()['invoice_id']
+                sd_amount, on_commission, hydro_testing, gst_sd_amount, final_amount
+            )
+            cursor.execute(insert_invoice_query, invoice_values)
             connection.commit()
-
-            print("This is the invocie id from the invoice table ", invoice_id)
+            invoice_id = cursor.lastrowid
 
             # Insert into assign_subcontractors table
-            # subcontractor_id = request.form.get('subcontractor_id')
-            # insert_assign_query = '''
-            #     INSERT INTO assign_subcontractors (PMC_no, Contractor_Id, Village_Id)
-            #     VALUES (%s, %s, %s)
-            # '''
-            # cursor.execute(insert_assign_query, (pmc_no, subcontractor_id, village_id))
-            # connection.commit()
             subcontractor_id = request.form.get('subcontractor_id')
-            cursor.callproc('AssignSubcontractor', [pmc_no, subcontractor_id, village_id])
+            insert_assign_query = '''
+                INSERT INTO assign_subcontractors (PMC_no, Contractor_Id, Village_Id)
+                VALUES (%s, %s, %s)
+            '''
+            cursor.execute(insert_assign_query, (pmc_no, subcontractor_id, village_id))
             connection.commit()
 
             # Insert Hold Amounts into invoice_subcontractor_hold_join table
@@ -986,30 +928,19 @@ def add_invoice():
             hold_count = 0
 
             for hold_type, hold_amount in zip(hold_types, hold_amounts):
-                # cursor.execute("SELECT hold_type_id FROM hold_types WHERE hold_type = %s", (hold_type,))
-                # hold_type_result = cursor.fetchone()
-                cursor.callproc('GetHoldTypeIdByName', [hold_type])
-                for result in cursor.stored_results():
-                    hold_type_result = result.fetchone()
-                print("hold type from invoice ", hold_type_result)
+                cursor.execute("SELECT hold_type_id FROM hold_types WHERE hold_type = %s", (hold_type,))
+                hold_type_result = cursor.fetchone()
                 if not hold_type_result:
                     return jsonify({"status": "error", "message": f"Invalid Hold Type: {hold_type}"}), 400
                 hold_type_id = hold_type_result['hold_type_id']
-                # insert_hold_query = '''
-                #     INSERT INTO invoice_subcontractor_hold_join (Contractor_Id, Invoice_Id, hold_type_id, hold_amount)
-                #     VALUES (%s, %s, %s, %s)
-                # '''
-                # cursor.execute(insert_hold_query, (subcontractor_id, invoice_id, hold_type_id, hold_amount))
-                # hold_count += 1
-
-                # connection.commit()
-                cursor.callproc('InsertInvoiceSubcontractorHold', [
-                    subcontractor_id, invoice_id, hold_type_id, hold_amount
-                ])
-                connection.commit()
+                insert_hold_query = '''
+                    INSERT INTO invoice_subcontractor_hold_join (Contractor_Id, Invoice_Id, hold_type_id, hold_amount)
+                    VALUES (%s, %s, %s, %s)
+                '''
+                cursor.execute(insert_hold_query, (subcontractor_id, invoice_id, hold_type_id, hold_amount))
                 hold_count += 1
-                print("Hold count from the invoice", hold_count)
-                connection.commit()
+
+            connection.commit()
 
             return jsonify({"status": "success", "message": "Invoice added successfully"}), 201
 
@@ -1023,13 +954,9 @@ def add_invoice():
     # GET request: fetch and display all invoices (all fields) along with the form
     try:
         cursor = connection.cursor(dictionary=True)
-        # cursor.execute("SELECT * FROM view_invoice_details")
-        # invoices = cursor.fetchall()
-        cursor.callproc('GetAllInvoiceDetails')
-        for result in cursor.stored_results():
-            invoices = result.fetchall()
-
-        villages = []
+        cursor.execute("SELECT * FROM view_invoice_details")
+        invoices = cursor.fetchall()
+        villages=[]
         cursor.callproc("GetAllVillages")
         for result in cursor.stored_results():
             villages = result.fetchall()
@@ -1041,8 +968,7 @@ def add_invoice():
         cursor.close()
         connection.close()
 
-    return render_template('add_invoice.html', invoices=invoices, villages=villages)
-
+    return render_template('add_invoice.html', invoices=invoices,villages=villages)
 
 # search subcontraactor to assing invoice
 @app.route('/search_subcontractor', methods=['POST'])
@@ -1054,15 +980,11 @@ def search_subcontractor():
     sub_query = request.form.get("query")
     try:
         cursor = connection.cursor(dictionary=True)
-        # cursor.execute(
-        #     "SELECT Contractor_Id, Contractor_Name FROM subcontractors WHERE Contractor_Name LIKE %s",
-        #     (f"%{sub_query}%",)
-        # )
-        # results = cursor.fetchall()
-        cursor.callproc('SearchContractorsByName', [sub_query])
-        for result in cursor.stored_results():
-            results = result.fetchall()
-        print(results)
+        cursor.execute(
+            "SELECT Contractor_Id, Contractor_Name FROM subcontractors WHERE Contractor_Name LIKE %s",
+            (f"%{sub_query}%",)
+        )
+        results = cursor.fetchall()
         if not results:
             return "<li>No subcontractor found</li>"
 
@@ -1070,7 +992,6 @@ def search_subcontractor():
             f"<li data-id='{row['Contractor_Id']}'>{row['Contractor_Name']}</li>"
             for row in results
         )
-        print("Ajax Call for subcontractor", output)
         return output
 
     except mysql.connector.Error as e:
@@ -1120,11 +1041,8 @@ def edit_invoice(invoice_id):
             subcontractor_id = int(subcontractor_id) if subcontractor_id else None
 
             village_name = request.form.get('village')
-            # cursor.execute("SELECT Village_Id FROM villages WHERE Village_Name = %s", (village_name,))
-            # village_result = cursor.fetchone()
-            cursor.callproc("GetVillageIdByName", (village_name,))
-            for rs in cursor.stored_results():
-                village_result = rs.fetchone()
+            cursor.execute("SELECT Village_Id FROM villages WHERE Village_Name = %s", (village_name,))
+            village_result = cursor.fetchone()
             if not village_result:
                 return jsonify({"status": "error", "message": "Invalid Village Name"}), 400
             village_id = village_result['Village_Id']
@@ -1151,25 +1069,20 @@ def edit_invoice(invoice_id):
             }
             numeric_fields = {k: float(v) if v else 0 for k, v in numeric_fields.items()}
 
-            # # Update invoice
-            # update_invoice_query = '''
-            #     UPDATE invoice
-            #     SET PMC_No=%s, Village_Id=%s, Work_Type=%s, Invoice_Details=%s, Invoice_Date=%s,
-            #         Invoice_No=%s, Basic_Amount=%s, Debit_Amount=%s, After_Debit_Amount=%s,
-            #         Amount=%s, GST_Amount=%s, TDS_Amount=%s, SD_Amount=%s, On_Commission=%s,
-            #         Hydro_Testing=%s, GST_SD_Amount=%s, Final_Amount=%s
-            #     WHERE Invoice_Id=%s
-            # '''
-            # invoice_values = (
-            #     pmc_no, village_id, work_type, invoice_details, invoice_date, invoice_no,
-            #     *numeric_fields.values(), invoice_id
-            # )
-            # cursor.execute(update_invoice_query, invoice_values)
-            # connection.commit()
-            cursor.callproc('UpdateInvoice', [
+            # Update invoice
+            update_invoice_query = '''
+                UPDATE invoice
+                SET PMC_No=%s, Village_Id=%s, Work_Type=%s, Invoice_Details=%s, Invoice_Date=%s,
+                    Invoice_No=%s, Basic_Amount=%s, Debit_Amount=%s, After_Debit_Amount=%s, 
+                    Amount=%s, GST_Amount=%s, TDS_Amount=%s, SD_Amount=%s, On_Commission=%s,
+                    Hydro_Testing=%s, GST_SD_Amount=%s, Final_Amount=%s
+                WHERE Invoice_Id=%s
+            '''
+            invoice_values = (
                 pmc_no, village_id, work_type, invoice_details, invoice_date, invoice_no,
                 *numeric_fields.values(), invoice_id
-            ])
+            )
+            cursor.execute(update_invoice_query, invoice_values)
             connection.commit()
 
             # Handle holds
@@ -1181,61 +1094,36 @@ def edit_invoice(invoice_id):
                     continue  # skip empty hold types
 
                 # Get or insert hold type
-                # cursor.execute("SELECT hold_type_id FROM hold_types WHERE hold_type = %s", (hold_type,))
-                # hold_type_result = cursor.fetchone()
-                cursor.callproc('GetHoldTypeIdByName', [hold_type])
-                for result in cursor.stored_results():
-                    hold_type_result = result.fetchone()
-
-                # if not hold_type_result:
-                #     cursor.execute("INSERT INTO hold_types (hold_type) VALUES (%s)", (hold_type,))
-                #     connection.commit()
-                #     hold_type_id = cursor.lastrowid
-                # else:
-                #     hold_type_id = hold_type_result['hold_type_id']
+                cursor.execute("SELECT hold_type_id FROM hold_types WHERE hold_type = %s", (hold_type,))
+                hold_type_result = cursor.fetchone()
 
                 if not hold_type_result:
-                    # Call stored procedure to insert and return new ID
-                    cursor.callproc('InsertHoldType', [hold_type, 0])
-                    for result in cursor.stored_results():
-                        pass  # advance past any results
-                    cursor.execute("SELECT @_InsertHoldType_1")
-                    hold_type_id = cursor.fetchone()[0]
-                    print("if not hold type result anish:", hold_type_id)
+                    cursor.execute("INSERT INTO hold_types (hold_type) VALUES (%s)", (hold_type,))
+                    connection.commit()
+                    hold_type_id = cursor.lastrowid
                 else:
                     hold_type_id = hold_type_result['hold_type_id']
-                    print("if hold type result anish:", hold_type_id)
 
                 hold_amount = float(hold_amount) if hold_amount else 0
 
                 # Check if join exists
-                # cursor.execute("""
-                #     SELECT join_id FROM invoice_subcontractor_hold_join
-                #     WHERE Invoice_Id = %s AND Contractor_Id = %s AND hold_type_id = %s
-                # """, (invoice_id, subcontractor_id, hold_type_id))
-                # join_result = cursor.fetchone()
-                cursor.callproc('GetHoldJoinId', [invoice_id, subcontractor_id, hold_type_id])
-                for result in cursor.stored_results():
-                    join_result = result.fetchone()
+                cursor.execute("""
+                    SELECT join_id FROM invoice_subcontractor_hold_join
+                    WHERE Invoice_Id = %s AND Contractor_Id = %s AND hold_type_id = %s
+                """, (invoice_id, subcontractor_id, hold_type_id))
+                join_result = cursor.fetchone()
 
                 if join_result:
-                    # cursor.execute("""
-                    #     UPDATE invoice_subcontractor_hold_join
-                    #     SET hold_amount = %s
-                    #     WHERE join_id = %s
-                    # """, (hold_amount, join_result['join_id']))
-                    cursor.callproc('UpdateHoldAmountByJoinId', [hold_amount, join_result['join_id']])
-                    connection.commit()
-
+                    cursor.execute("""
+                        UPDATE invoice_subcontractor_hold_join
+                        SET hold_amount = %s
+                        WHERE join_id = %s
+                    """, (hold_amount, join_result['join_id']))
                 else:
-                    # cursor.execute("""
-                    #     INSERT INTO invoice_subcontractor_hold_join (Contractor_Id, Invoice_Id, hold_type_id, hold_amount)
-                    #     VALUES (%s, %s, %s, %s)
-                    # """, (subcontractor_id, invoice_id, hold_type_id, hold_amount))
-                    cursor.callproc('InsertInvoiceSubcontractorHold', [
-                        subcontractor_id, invoice_id, hold_type_id, hold_amount
-                    ])
-                    connection.commit()
+                    cursor.execute("""
+                        INSERT INTO invoice_subcontractor_hold_join (Contractor_Id, Invoice_Id, hold_type_id, hold_amount)
+                        VALUES (%s, %s, %s, %s)
+                    """, (subcontractor_id, invoice_id, hold_type_id, hold_amount))
 
             connection.commit()
             return jsonify({"status": "success", "message": "Invoice updated successfully"}), 200
@@ -1251,19 +1139,15 @@ def edit_invoice(invoice_id):
 
     try:
         # Fetch invoice data
-        # cursor.execute(
-        #     """SELECT i.*, s.Contractor_Name, v.Village_Name
-        #        FROM invoice i
-        #        LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_no AND i.Village_Id = a.Village_Id
-        #        LEFT JOIN subcontractors s ON a.Contractor_Id = s.Contractor_Id
-        #        LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-        #        WHERE i.Invoice_Id = %s""", (invoice_id,)
-        # )
-        # invoice = cursor.fetchone()
-        cursor.callproc('GetInvoiceDetailsById', [invoice_id])
-        for result in cursor.stored_results():
-            invoice = result.fetchone()
-
+        cursor.execute(
+            """SELECT i.*, s.Contractor_Name, v.Village_Name
+               FROM invoice i
+               LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_no AND i.Village_Id = a.Village_Id
+               LEFT JOIN subcontractors s ON a.Contractor_Id = s.Contractor_Id
+               LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+               WHERE i.Invoice_Id = %s""", (invoice_id,)
+        )
+        invoice = cursor.fetchone()
         if not invoice:
             return jsonify({"status": "error", "message": "Invoice not found"}), 404
 
@@ -1272,20 +1156,14 @@ def edit_invoice(invoice_id):
             pass
 
         # Fetch hold amounts
-        # cursor.execute(
-        #     """SELECT h.hold_type, ihj.hold_amount
-        #        FROM invoice_subcontractor_hold_join ihj
-        #        JOIN hold_types h ON ihj.hold_type_id = h.hold_type_id
-        #        WHERE ihj.Invoice_Id = %s""", (invoice_id,)
-        # )
-        # hold_amounts = cursor.fetchall()
-        # invoice["hold_amounts"] = hold_amounts
-        cursor.callproc('GetHoldAmountsByInvoiceId', [invoice_id])
-        for result in cursor.stored_results():
-            hold_amounts = result.fetchall()
-
+        cursor.execute(
+            """SELECT h.hold_type, ihj.hold_amount 
+               FROM invoice_subcontractor_hold_join ihj
+               JOIN hold_types h ON ihj.hold_type_id = h.hold_type_id
+               WHERE ihj.Invoice_Id = %s""", (invoice_id,)
+        )
+        hold_amounts = cursor.fetchall()
         invoice["hold_amounts"] = hold_amounts
-
 
     except mysql.connector.Error as e:
         return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
@@ -1294,6 +1172,7 @@ def edit_invoice(invoice_id):
         connection.close()
 
     return render_template('edit_invoice.html', invoice=invoice)
+
 
 
 # delete invoice by id
@@ -1389,14 +1268,10 @@ def add_payment():
         cursor = connection.cursor()
 
         try:
-            # cursor.execute(
-            #     "SELECT Payment_Id, PMC_No, Invoice_No, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR FROM payment"
-            # )
-            # payments = cursor.fetchall()
-            cursor.callproc('GetAllPayments')
-            for result in cursor.stored_results():
-                payments = result.fetchall()
-
+            cursor.execute(
+                "SELECT Payment_Id, PMC_No, Invoice_No, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR FROM payment"
+            )
+            payments = cursor.fetchall()
         except mysql.connector.Error as e:
             print(f"Error fetching payment history: {e}")
             return "Failed to fetch payment history", 500
@@ -1413,15 +1288,10 @@ def add_payment():
 
         try:
             cursor = connection.cursor()
-            # cursor.execute('''INSERT INTO payment (PMC_No, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR)
-            #                   VALUES (%s, %s, %s, %s, %s, %s)''',
-            #                (pmc_no, invoice_no, amount, tds_amount, total_amount, utr))
-            # connection.commit()
-            cursor.callproc('InsertPayments', [
-                pmc_no, invoice_no, amount, tds_amount, total_amount, utr
-            ])
+            cursor.execute('''INSERT INTO payment (PMC_No, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR)
+                              VALUES (%s, %s, %s, %s, %s, %s)''',
+                           (pmc_no, invoice_no, amount, tds_amount, total_amount, utr))
             connection.commit()
-
             return redirect(url_for('add_payment'))
 
         except mysql.connector.Error as e:
@@ -1439,23 +1309,20 @@ def get_pmc_nos_by_subcontractor(subcontractorId):
     connection = config.get_db_connection()
     cur = connection.cursor()
     print(subcontractorId)
-    # query = """
-    #     SELECT DISTINCT i.PMC_No
-    #     FROM invoice i
-    #     JOIN assign_subcontractors a ON i.PMC_No = a.PMC_no
-    #     JOIN subcontractors s ON a.Contractor_Id = s.Contractor_Id
-    #     WHERE s.Contractor_Id=%s;
-    # """
-    # cur.execute(query, (subcontractorId,))
-    # results = cur.fetchall()
-    cur.callproc('GetDistinctPMCNoByContractorId', [subcontractorId])
-    for result in cur.stored_results():
-        results = result.fetchall()
-
+    query = """
+        SELECT DISTINCT i.PMC_No 
+        FROM invoice i
+        JOIN assign_subcontractors a ON i.PMC_No = a.PMC_no
+        JOIN subcontractors s ON a.Contractor_Id = s.Contractor_Id
+        WHERE s.Contractor_Id=%s;
+    """
+    cur.execute(query, (subcontractorId,))
+    results = cur.fetchall()
     print(results)
     pmc_nos = [row[0] for row in results]
     cur.close()
     return jsonify({'pmc_nos': pmc_nos})
+
 
 
 # Edit Payment Route
@@ -1495,8 +1362,7 @@ def edit_payment(payment_id):
                 #                   Total_Amount=%s, UTR=%s WHERE Payment_Id=%s''',
                 #                (pmc_no, invoice_no, amount, tds_amount, total_amount, utr, payment_id))
 
-                cursor.callproc("UpdatePayment",
-                                (payment_id, pmc_no, invoice_no, amount, tds_amount, total_amount, utr,))
+                cursor.callproc("UpdatePayment",(payment_id, pmc_no, invoice_no, amount, tds_amount, total_amount, utr,))
                 connection.commit()
 
                 return redirect(url_for('add_payment'))  # Redirect to add_payment page to view the updated list
@@ -1621,7 +1487,7 @@ def edit_gst_release(gst_release_id):
                 #                   WHERE GST_Release_Id=%s''',
                 #                (pmc_id, invoice_no, basic_amount, final_amount, gst_release_id))
 
-                cursor.callproc("UpdateGSTRelease", (gst_release_id, pmc_id, invoice_no, basic_amount, final_amount))
+                cursor.callproc("UpdateGSTRelease", (gst_release_id, pmc_id, invoice_no, basic_amount, final_amount ))
 
                 connection.commit()
 
@@ -1681,13 +1547,9 @@ def subcontract():
 
         if request.method == 'GET':
             try:
-                # cursor.execute('SELECT * FROM subcontractors;')
-                # subcontractor = cursor.fetchall()  # Fetch the current subcontractor list
-                # connection.commit()
-                cursor.callproc('GetAllSubcontractors')
-                for result in cursor.stored_results():
-                    subcontractor = result.fetchall()
-
+                cursor.execute('SELECT * FROM subcontractors;')
+                subcontractor = cursor.fetchall()  # Fetch the current subcontractor list
+                connection.commit()
             except Error as e:
                 print(f"Error fetching data: {e}")
                 return json_response(ResponseHandler.fetch_failure("Subcontractor"), 500)
@@ -1720,12 +1582,8 @@ def subcontract():
                 connection.commit()
 
                 # Re-fetch subcontractors after inserting the new one
-                # cursor.execute('SELECT * FROM subcontractors')
-                # subcontractor = cursor.fetchall()
-                cursor.callproc('GetAllSubcontractors')
-                for result in cursor.stored_results():
-                    subcontractor = result.fetchall()
-
+                cursor.execute('SELECT * FROM subcontractors')
+                subcontractor = cursor.fetchall()
 
             except Error as e:
                 print(f"Error inserting data: {e}")
@@ -1904,67 +1762,47 @@ def show_table(filename):
             cursor = connection.cursor(dictionary=True)
 
             # Validate State
-            # cursor.execute("SELECT State_ID, State_Name FROM states WHERE State_Name = %s", (file_info['State'],))
-            # state_data = cursor.fetchone()
-            cursor.callproc('GetStateByName', [file_info['State']])
-            for result in cursor.stored_results():
-                state_data = result.fetchone()
-
+            cursor.execute("SELECT State_ID, State_Name FROM states WHERE State_Name = %s", (file_info['State'],))
+            state_data = cursor.fetchone()
             if not state_data:
                 errors.append(f"State '{file_info['State']}' is not valid. Please add it.")
 
             # Validate District
             if state_data:
-                # cursor.execute(
-                #     "SELECT District_ID, District_Name FROM districts WHERE District_Name = %s AND State_ID = %s",
-                #     (file_info['District'], state_data['State_ID'])
-                # )
-                # district_data = cursor.fetchone()
-                cursor.callproc('GetDistrictByNameAndStates', [file_info['District'], state_data['State_ID']])
-                for result in cursor.stored_results():
-                    district_data = result.fetchone()
-
+                cursor.execute(
+                    "SELECT District_ID, District_Name FROM districts WHERE District_Name = %s AND State_ID = %s",
+                    (file_info['District'], state_data['State_ID'])
+                )
+                district_data = cursor.fetchone()
                 if not district_data:
                     errors.append(
                         f"District '{file_info['District']}' is not valid under state '{file_info['State']}'.")
 
             # Validate Block
             if district_data:
-                # cursor.execute(
-                #     "SELECT Block_Id, Block_Name FROM blocks WHERE Block_Name = %s AND District_ID = %s",
-                #     (file_info['Block'], district_data['District_ID'])
-                # )
-                # block_data = cursor.fetchone()
-                cursor.callproc('GetBlockByNameAndDistricts', [file_info['Block'], district_data['District_ID']])
-                for result in cursor.stored_results():
-                    block_data = result.fetchone()
-
+                cursor.execute(
+                    "SELECT Block_Id, Block_Name FROM blocks WHERE Block_Name = %s AND District_ID = %s",
+                    (file_info['Block'], district_data['District_ID'])
+                )
+                block_data = cursor.fetchone()
                 if not block_data:
                     errors.append(
                         f"Block '{file_info['Block']}' is not valid under district '{file_info['District']}'.")
 
+
             # old code
             # # Validate Subcontractor
-            # cursor.execute("SELECT Contractor_Id, Contractor_Name FROM SubContractors WHERE Contractor_Name = %s",
-            #                (file_info['Subcontractor'],))
-            # subcontractor_data = cursor.fetchone()
-            cursor.callproc('GetSubcontractorByName', [file_info['Subcontractor']])
-            for result in cursor.stored_results():
-                subcontractor_data = result.fetchone()
+            cursor.execute("SELECT Contractor_Id, Contractor_Name FROM subcontractors WHERE Contractor_Name = %s",
+                           (file_info['Subcontractor'],))
+            subcontractor_data = cursor.fetchone()
 
             if not subcontractor_data:
-                # cursor.execute("INSERT INTO subcontractors (Contractor_Name) VALUES (%s)",
-                #                (file_info['Subcontractor'],))
-                # connection.commit()
-                cursor.callproc('InsertSubcontractor', [file_info['Subcontractor']])
+                cursor.execute("INSERT INTO subcontractors (Contractor_Name) VALUES (%s)",
+                               (file_info['Subcontractor'],))
                 connection.commit()
-
-                # cursor.execute("SELECT Contractor_Id, Contractor_Name FROM SubContractors WHERE Contractor_Name = %s",
-                #                (file_info['Subcontractor'],))
-                # subcontractor_data = cursor.fetchone()
-                cursor.callproc('GetSubcontractorByNames', [file_info['Subcontractor']])
-                for result in cursor.stored_results():
-                    subcontractor_data = result.fetchone()
+                cursor.execute("SELECT Contractor_Id, Contractor_Name FROM subcontractors WHERE Contractor_Name = %s",
+                               (file_info['Subcontractor'],))
+                subcontractor_data = cursor.fetchone()
 
             # new code
             # cursor.callproc('ValidateAndInsertSubcontractor', (file_info['Subcontractor'], 0, ''))
@@ -1983,13 +1821,16 @@ def show_table(filename):
             for ht in cursor.stored_results():
                 hold_types_data = ht.fetchall()
 
-            hold_types_lookup = {row['hold_type'].lower(): row['hold_type_id'] for row in hold_types_data if
-                                 row['hold_type']}
+
+            hold_types_lookup = {row['hold_type'].lower(): row['hold_type_id'] for row in hold_types_data if row['hold_type']}
+
 
             cursor.close()
         except mysql.connector.Error as e:
             print(f"Database error: {e}")
-            return "Database operation failed", 500
+
+           # return "Database operation failed", 500
+            return f"{e}",500
         finally:
             connection.close()
 
@@ -2127,6 +1968,7 @@ def save_data():
                 TDS_Payment_Amount = save_data.get('TDS_Payment_Amount')
                 UTR = save_data.get('UTR')
 
+
                 if Invoice_Details:
                     words = Invoice_Details.lower().split()
                     if 'village' in words:
@@ -2145,7 +1987,7 @@ def save_data():
                             village_id = None
                             # cursor.execute("SELECT Village_Id FROM villages WHERE Block_Id = %s AND Village_Name = %s",(block_id, village_name))
                             # result = cursor.fetchone()
-                            cursor.callproc("GetVillageId", (block_id, village_name))
+                            cursor.callproc("GetVillageId",(block_id, village_name))
                             for result in cursor.stored_results():
                                 result = result.fetchone()
                             village_id = result[0] if result else None
@@ -2183,14 +2025,12 @@ def save_data():
                             SD_Amount, On_Commission, Hydro_Testing, GST_SD_Amount, Final_Amount,
                             subcontractor_id, 0
                         )
-                        # for result in cursor.stored_results():
-                        #      invoice_id = result.fetchone()['invoice_id']
+
                         results = cursor.callproc('SaveInvoice', args)
-                        # cursor.callproc("SaveInvoice",args)
-                        # for re in cursor.stored_results():
                         invoice_id = results[-1]
 
-                        print("invoice id from the excel ", invoice_id)
+                        print("invoice id ",invoice_id)
+
 
                         if isinstance(hold_columns, str):
                             hold_columns = ast.literal_eval(hold_columns)
@@ -2216,18 +2056,11 @@ def save_data():
                                             "hold_amount": hold_amount
                                         }
 
-                                        # insert_hold_query = """INSERT INTO invoice_subcontractor_hold_join (Contractor_Id, Invoice_Id, hold_type_id, hold_amount)
-                                        #                     VALUES (%(Contractor_Id)s, %(Invoice_Id)s, %(hold_type_id)s, %(hold_amount)s);
-                                        #                 """
-                                        # cursor.execute(insert_hold_query, hold_join_data)
-                                        # print(f"Inserted hold join data: {hold_join_data}")
-                                        cursor.callproc('InsertHoldJoinData', [
-                                            hold_join_data['Contractor_Id'], hold_join_data['Invoice_Id'],
-                                            hold_join_data['hold_type_id'], hold_join_data['hold_amount']
-                                        ])
-                                        connection.commit()
+                                        insert_hold_query = """INSERT INTO invoice_subcontractor_hold_join (Contractor_Id, Invoice_Id, hold_type_id, hold_amount)
+                                                            VALUES (%(Contractor_Id)s, %(Invoice_Id)s, %(hold_type_id)s, %(hold_amount)s);
+                                                        """
+                                        cursor.execute(insert_hold_query, hold_join_data)
                                         print(f"Inserted hold join data: {hold_join_data}")
-
 
                                 else:
                                     print(f"Invalid hold entry: {hold}")
@@ -2238,7 +2071,7 @@ def save_data():
                     elif Invoice_Details and any(
                             keyword in Invoice_Details.lower() for keyword in ['gst', 'release', 'note']):
                         print("Gst rels :", PMC_No, Invoice_No, Basic_Amount, Final_Amount)
-                        cursor.callproc("SaveGSTRelease", (PMC_No, Invoice_No, Basic_Amount, Final_Amount))
+                        cursor.callproc("SaveGSTRelease",(PMC_No, Invoice_No, Basic_Amount, Final_Amount))
                         # cursor.execute(
                         #     """INSERT INTO gst_release (PMC_No, Invoice_No, Basic_Amount, Final_Amount) VALUES (%s,%s, %s, %s)""",
                         #     (PMC_No, Invoice_No, Basic_Amount, Final_Amount))
@@ -2253,8 +2086,7 @@ def save_data():
                     # cursor.execute(insert_payment,
                     #                (PMC_No, Invoice_No, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR))
 
-                    cursor.callproc("SavePayment",
-                                    (PMC_No, Invoice_No, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR))
+                    cursor.callproc("SavePayment",(PMC_No, Invoice_No, Payment_Amount, TDS_Payment_Amount, Total_Amount, UTR))
 
             connection.commit()
             return jsonify({"success": "Data saved successfully!"}), 200
@@ -2320,32 +2152,20 @@ def search_contractor():
     if not conditions:
         return jsonify({"error": "At least one field is required for search."}), 400
 
-    # query = f""" SELECT DISTINCT s.Contractor_Id, s.Contractor_Name, i.PMC_No, st.State_Name,
-    #     d.District_Name, b.Block_Name, v.Village_Name
-    #     FROM subcontractors s
-    #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-    #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-    #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-    #     LEFT JOIN districts d ON b.District_id = d.District_id
-    #     LEFT JOIN states st ON d.State_Id = st.State_Id
-    #     LEFT JOIN invoice i ON v.Village_Id = i.Village_Id
-    #     WHERE {' AND '.join(conditions)}
-    # """
+    query = f""" SELECT DISTINCT s.Contractor_Id, s.Contractor_Name, i.PMC_No, st.State_Name, 
+        d.District_Name, b.Block_Name, v.Village_Name 
+        FROM subcontractors s
+        LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+        LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+        LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+        LEFT JOIN districts d ON b.District_id = d.District_id
+        LEFT JOIN states st ON d.State_Id = st.State_Id
+        LEFT JOIN invoice i ON v.Village_Id = i.Village_Id
+        WHERE {' AND '.join(conditions)}
+    """
 
-    # cursor.execute(query, tuple(params))
-    # data = cursor.fetchall()
-    # cursor.callproc('SearchSubcontractors', [
-    # file_info['Subcontractor'], pmc_no, state, district, block, village, year_from, year_to
-    #  ])
-
-    # for result in cursor.stored_results():
-    #     data = result.fetchall()
-    cursor.callproc("search_contractor_info",
-                    [subcontractor_name or '', pmc_no or '', state or '', district or '', block or '',
-                     village or '', year_from or None, year_to or None])
-    for result in cursor.stored_results():
-        data = result.fetchall()
-
+    cursor.execute(query, tuple(params))
+    data = cursor.fetchall()
     return jsonify(data)
 
 
@@ -2464,23 +2284,20 @@ def contractor_report(contractor_id):
 
     try:
         # Fetch contractor details
-        # cursor.execute("""
-        #     SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
-        #            s.Mobile_No, s.GST_Registration_Type, s.GST_No,s.PAN_No,s.Email,s.Address
-        #     FROM subcontractors s
-        #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-        #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-        #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-        #     LEFT JOIN districts d ON b.District_id = d.District_id
-        #     LEFT JOIN states st ON d.State_Id = st.State_Id
-        #     WHERE s.Contractor_Id = %s
-        # """, (contractor_id,))
-        # contInfo = cursor.fetchone()
-        cursor.callproc("GetContractorInfoByIds", (contractor_id,))
-        for con in cursor.stored_results():
-            contInfo = con.fetchone()
+        cursor.execute("""
+            SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
+                   s.Mobile_No, s.GST_Registration_Type, s.GST_No,s.PAN_No,s.Email,s.Address
+            FROM subcontractors s
+            LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+            LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+            LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+            LEFT JOIN districts d ON b.District_id = d.District_id
+            LEFT JOIN states st ON d.State_Id = st.State_Id
+            WHERE s.Contractor_Id = %s
+        """, (contractor_id,))
+        contInfo = cursor.fetchone()
 
-        # Fetch distinct hold types present in invoices for the contractor
+        # # Fetch distinct hold types present in invoices for the contractor
         # cursor.execute("""
         #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
         #     FROM invoice_subcontractor_hold_join h
@@ -2512,7 +2329,7 @@ def contractor_report(contractor_id):
         # """
         # cursor.execute(query, (contractor_id,))
         # invoices = cursor.fetchall()
-        cursor.callproc('GetInvoicesByContractorId', [contractor_id])
+        cursor.callproc('GetInvoicesWithHoldInfoByContractor', [contractor_id])
 
         for result in cursor.stored_results():
             invoices = result.fetchall()
@@ -2932,360 +2749,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 import config
 
-
 # -----------------------PMC Report---------------------------
-# @app.route('/download_report/<int:contractor_id>')
-# def download_report(contractor_id):
-#     connection = config.get_db_connection()
-#     cursor = connection.cursor(dictionary=True)
-
-#     output_folder = "static/download"
-#     output_file = os.path.join(output_folder, f"Contractor_Report_{contractor_id}.xlsx")
-
-#     if not os.path.exists(output_folder):
-#         os.makedirs(output_folder)
-
-#     try:
-#         # Fetch Contractor Details
-#         cursor.execute("""
-#             SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
-#                             s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
-#             FROM subcontractors s
-#             LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-#             LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-#             LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-#             LEFT JOIN districts d ON b.District_id = d.District_id
-#             LEFT JOIN states st ON d.State_Id = st.State_Id
-#             WHERE s.Contractor_Id = %s
-#         """, (contractor_id,))
-#         contInfo = cursor.fetchone()
-
-#         if not contInfo:
-#             return "No contractor found", 404
-
-#         # # Fetch distinct hold types present for the contractor
-#         # cursor.execute("""
-#         #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
-#         #     FROM invoice_subcontractor_hold_join h
-#         #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-#         #     WHERE h.Contractor_Id = %s
-#         # """, (contractor_id,))
-#         # hold_types = cursor.fetchall()
-#         cursor.callproc('GetDistinctHoldTypesByContractor', [contractor_id])
-
-#         for result in cursor.stored_results():
-#             hold_types = result.fetchall()
-
-#         hold_type_map = {ht['hold_type_id']: ht['hold_type'] for ht in hold_types}
-
-#         # # Fetch Invoices & GST Releases
-#         # cursor.execute("""
-#         #     SELECT DISTINCT i.Invoice_Id, i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-#         #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-#         #            i.After_Debit_Amount, i.GST_Amount, i.Amount, i.TDS_Amount, i.SD_Amount,
-#         #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount,
-#         #            g.pmc_no AS gst_pmc_no, g.invoice_no AS gst_invoice_no,
-#         #            g.basic_amount AS gst_basic_amount, g.final_amount AS gst_final_amount
-#         #     FROM invoice i
-#         #     LEFT JOIN assign_subcontractors asg ON i.PMC_No = asg.PMC_No
-#         #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-#         #     LEFT JOIN gst_release g ON i.PMC_No = g.pmc_no AND i.Invoice_No = g.invoice_no
-#         #     WHERE asg.Contractor_Id = %s
-#         # """, (contractor_id,))
-#         # invoices = cursor.fetchall()
-#         cursor.callproc('GetInvoicesAndGSTReleasesByContractor', [contractor_id])
-
-#         for result in cursor.stored_results():
-#             invoices = result.fetchall()
-
-#         # # Fetch Hold Amounts separately
-#         # cursor.execute("""
-#         #     SELECT h.Invoice_Id, ht.hold_type_id, h.hold_amount
-#         #     FROM invoice_subcontractor_hold_join h
-#         #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-#         #     WHERE h.Contractor_Id = %s
-#         # """, (contractor_id,))
-#         # hold_amounts = cursor.fetchall()
-#         cursor.callproc('GetHoldAmountsByContractors', [contractor_id])
-
-#         for result in cursor.stored_results():
-#             hold_amounts = result.fetchall()
-
-#         # Create a mapping of invoice_id to hold amounts by type
-#         hold_data = {}
-#         for h in hold_amounts:
-#             hold_data.setdefault(h['Invoice_Id'], {})[h['hold_type_id']] = h['hold_amount']
-
-#         # Extract unique PMC numbers for payments
-#         pmc_numbers = tuple(set(inv['PMC_No'] for inv in invoices if inv['PMC_No'] is not None))
-
-#         # Fetch all Payments for the PMC numbers (including those with null invoice_no)
-#         payments_map = {}
-#         extra_payments_map = {}  # Now using a map to organize extra payments by PMC
-#         if pmc_numbers:
-#             # First get payments with invoice_no
-#             query = f"""
-#                 SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-#                 FROM payment
-#                 WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
-#                 AND invoice_no IS NOT NULL
-#                 ORDER BY pmc_no, invoice_no
-#             """
-#             cursor.execute(query, pmc_numbers)
-#             payments = cursor.fetchall()
-
-#             # Organize payments by PMC No & Invoice No
-#             for pay in payments:
-#                 key = (pay['pmc_no'], pay['invoice_no'])
-#                 if key not in payments_map:
-#                     payments_map[key] = []
-#                 payments_map[key].append(pay)
-
-#             # Then get extra payments (null invoice_no) and organize by PMC
-#             query = f"""
-#                 SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-#                 FROM payment
-#                 WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
-#                 AND invoice_no IS NULL
-#                 ORDER BY pmc_no
-#             """
-#             cursor.execute(query, pmc_numbers)
-#             extra_payments = cursor.fetchall()
-
-#             for pay in extra_payments:
-#                 if pay['pmc_no'] not in extra_payments_map:
-#                     extra_payments_map[pay['pmc_no']] = []
-#                 extra_payments_map[pay['pmc_no']].append(pay)
-
-#         # Create Excel workbook
-#         workbook = openpyxl.Workbook()
-#         sheet = workbook.active
-#         sheet.title = "Contractor Report"
-
-#         # Write Contractor Details
-#         sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
-#         sheet.append(["State", contInfo["State_Name"]])
-#         sheet.append(["District", contInfo["District_Name"]])
-#         sheet.append(["Block", contInfo["Block_Name"]])
-#         sheet.append(["Mobile No", contInfo["Mobile_No"]])
-#         sheet.append(["GST Type", contInfo["GST_Registration_Type"]])
-#         sheet.append(["GST No", contInfo["GST_No"]])
-#         sheet.append(["PAN No", contInfo["PAN_No"]])
-#         sheet.append(["Email", contInfo["Email"]])
-#         sheet.append(["Address", contInfo["Address"]])
-#         sheet.append([])
-
-#         # Table Headers - include all hold types as separate columns
-#         base_headers = ["PMC No", "Village", "Work Type", "Invoice Details", "Invoice Date", "Invoice No",
-#                         "Basic Amount", "Debit", "After Debit Amount", "GST (18%)", "Amount", "TDS (1%)",
-#                         "SD (5%)", "On Commission", "Hydro Testing", "GST SD Amount"]
-
-#         hold_headers = [ht['hold_type'] for ht in hold_types]
-
-#         payment_headers = ["Final Amount", "Payment Amount", "TDS Payment", "Total Paid", "UTR"]
-
-#         sheet.append(base_headers + hold_headers + payment_headers)
-
-#         seen_invoices = set()
-#         seen_gst_notes = set()
-#         processed_payments = set()  # Track which payments we've processed
-
-#         # Process invoices grouped by PMC No
-#         pmc_groups = {}
-#         for inv in invoices:
-#             pmc_no = inv["PMC_No"]
-#             if pmc_no not in pmc_groups:
-#                 pmc_groups[pmc_no] = []
-#             pmc_groups[pmc_no].append(inv)
-
-#         # Process each PMC group separately
-#         for pmc_no, pmc_invoices in pmc_groups.items():
-#             # Process all invoices for this PMC first
-#             for inv in pmc_invoices:
-#                 invoice_no = inv["Invoice_No"]
-#                 payments = payments_map.get((pmc_no, invoice_no), [])
-
-#                 # Process invoice row with first payment (if exists)
-#                 if (pmc_no, invoice_no) not in seen_invoices:
-#                     seen_invoices.add((pmc_no, invoice_no))
-#                     first_payment = payments[0] if len(payments) > 0 else None
-
-#                     # Base invoice data
-#                     row = [
-#                         pmc_no, inv["Village_Name"], inv["Work_Type"], inv["Invoice_Details"],
-#                         inv["Invoice_Date"], invoice_no, inv["Basic_Amount"], inv["Debit_Amount"],
-#                         inv["After_Debit_Amount"], inv["GST_Amount"], inv["Amount"], inv["TDS_Amount"],
-#                         inv["SD_Amount"], inv["On_Commission"], inv["Hydro_Testing"], inv["GST_SD_Amount"]
-#                     ]
-
-#                     # Add hold amounts for each hold type
-#                     invoice_holds = hold_data.get(inv["Invoice_Id"], {})
-#                     for ht_id in hold_type_map.keys():
-#                         row.append(invoice_holds.get(ht_id, ""))
-
-#                     # Add payment information
-#                     row += [
-#                         inv["Final_Amount"],
-#                         first_payment["Payment_Amount"] if first_payment else "",
-#                         first_payment["TDS_Payment_Amount"] if first_payment else "",
-#                         first_payment["Total_amount"] if first_payment else "",
-#                         first_payment["UTR"] if first_payment else ""
-#                     ]
-
-#                     sheet.append(row)
-
-#                     if first_payment:
-#                         payment_id = f"{pmc_no}-{invoice_no}-{first_payment['Payment_Amount']}-{first_payment.get('UTR', '')}"
-#                         processed_payments.add(payment_id)
-
-#                 # Process GST release if exists (only if we have a matching GST record)
-#                 if inv["gst_pmc_no"] and (inv["gst_pmc_no"], inv["gst_invoice_no"]) not in seen_gst_notes:
-#                     seen_gst_notes.add((inv["gst_pmc_no"], inv["gst_invoice_no"]))
-
-#                     # Find the payment that matches this GST release
-#                     gst_payment = None
-#                     for payment in payments[1:]:  # Skip first payment (already used for invoice)
-#                         if payment['invoice_no'] == inv["gst_invoice_no"]:
-#                             gst_payment = payment
-#                             break
-
-#                     # GST release row
-#                     row = [
-#                         pmc_no, "", "", "GST Release Note", "", inv["gst_invoice_no"],
-#                         inv["gst_basic_amount"], "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-#                     ]
-
-#                     # Empty holds for GST release
-#                     row += ["" for _ in hold_headers]
-
-#                     # Add payment information
-#                     row += [
-#                         inv["gst_final_amount"],
-#                         gst_payment["Payment_Amount"] if gst_payment else "",
-#                         gst_payment["TDS_Payment_Amount"] if gst_payment else "",
-#                         gst_payment["Total_amount"] if gst_payment else "",
-#                         gst_payment["UTR"] if gst_payment else ""
-#                     ]
-
-#                     sheet.append(row)
-
-#                     if gst_payment:
-#                         payment_id = f"{pmc_no}-{inv['gst_invoice_no']}-{gst_payment['Payment_Amount']}-{gst_payment.get('UTR', '')}"
-#                         processed_payments.add(payment_id)
-
-#                 # Process remaining payments as extra payments
-#                 for payment in payments[1:]:
-#                     payment_id = f"{pmc_no}-{payment['invoice_no']}-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
-#                     if payment_id not in processed_payments:
-#                         row = [
-#                             pmc_no, "", "", "", "", payment['invoice_no'],
-#                             "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-#                         ]
-
-#                         # Empty holds for extra payments
-#                         row += ["" for _ in hold_headers]
-
-#                         # Add payment information
-#                         row += [
-#                             "",
-#                             payment["Payment_Amount"],
-#                             payment["TDS_Payment_Amount"],
-#                             payment["Total_amount"],
-#                             payment["UTR"]
-#                         ]
-
-#                         sheet.append(row)
-#                         processed_payments.add(payment_id)
-
-#             # Process extra payments for this PMC (null invoice_no) immediately after the PMC's invoices
-#             if pmc_no in extra_payments_map:
-#                 for payment in extra_payments_map[pmc_no]:
-#                     payment_id = f"{pmc_no}-null-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
-#                     if payment_id not in processed_payments:
-#                         row = [
-#                             pmc_no, "", "", "", "", "",
-#                             "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-#                         ]
-
-#                         # Empty holds for null invoice payments
-#                         row += ["" for _ in hold_headers]
-
-#                         # Add payment information
-#                         row += [
-#                             "",
-#                             payment["Payment_Amount"],
-#                             payment["TDS_Payment_Amount"],
-#                             payment["Total_amount"],
-#                             payment["UTR"]
-#                         ]
-
-
-#                         sheet.append(row)
-#                         processed_payments.add(payment_id)
-
-#         workbook.save(output_file)
-#         workbook.close()
-#     finally:
-#         cursor.close()
-#         connection.close()
-#     from openpyxl.styles import Font
-
-#     # Initialize totals
-#     total_basic_amount = 0
-#     total_tds_amount = 0
-#     total_sd_amount = 0
-#     total_on_commission = 0
-#     total_hold_amount = 0
-#     total_final_amount = 0
-#     total_total_amount = 0  # Sum of all Total Amounts from payment data
-
-#     # Iterate through rows to calculate totals
-#     for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
-#         try:
-#             total_basic_amount += float(row[6] or 0)  # Basic_Amount
-#             total_tds_amount += float(row[11] or 0)  # TDS_Amount
-#             total_sd_amount += float(row[12] or 0)  # SD_Amount
-#             total_on_commission += float(row[13] or 0)  # On_Commission
-#             total_final_amount += float(row[-5] or 0)  # Final_Amount
-#             total_total_amount += float(row[-2] or 0)  # Total_Amount (from payments)
-
-#             # Sum of hold amounts (dynamically calculated based on hold_headers)
-#             hold_start_col = len(base_headers)  # First column where hold types start
-#             hold_end_col = hold_start_col + len(hold_headers)  # Last column where hold types end
-#             total_hold_amount += sum(float(row[i] or 0) for i in range(hold_start_col, hold_end_col))
-
-#         except ValueError:
-#             continue  # Skip if non-numeric values cause errors
-
-#     # Append the totals row at the bottom of the sheet
-#     totals_row = [
-#         "TOTAL", "", "", "", "", "",  # Empty values for non-numeric columns
-#         total_basic_amount, "", "", "", "", total_tds_amount, total_sd_amount,
-#         total_on_commission, "", "",  # Empty GST SD Amount
-#     ]
-
-#     # Add empty placeholders for hold types
-#     totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
-
-#     # Add totals for Final Amount and Total Amount
-#     totals_row += [
-#         total_final_amount, "", "", total_total_amount, ""  # UTR column remains empty
-#     ]
-
-#     # Append totals row to sheet
-#     sheet.append([])
-#     sheet.append(totals_row)
-
-#     # Make the totals row bold
-#     for cell in sheet[sheet.max_row]:
-#         cell.font = Font(bold=True)
-
-#     # Save workbook after modifications
-#     workbook.save(output_file)
-#     workbook.close()
-
-#     return send_from_directory(output_folder, f"Contractor_Report_{contractor_id}.xlsx", as_attachment=True)
-
 @app.route('/download_report/<int:contractor_id>')
 def download_report(contractor_id):
     connection = config.get_db_connection()
@@ -3299,21 +2763,18 @@ def download_report(contractor_id):
 
     try:
         # Fetch Contractor Details
-        # cursor.execute("""
-        #     SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
-        #                     s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
-        #     FROM subcontractors s
-        #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-        #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-        #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-        #     LEFT JOIN districts d ON b.District_id = d.District_id
-        #     LEFT JOIN states st ON d.State_Id = st.State_Id
-        #     WHERE s.Contractor_Id = %s
-        # """, (contractor_id,))
-        # contInfo = cursor.fetchone()
-        cursor.callproc('GetContractorInfoId', [contractor_id])
-        for result in cursor.stored_results():
-            contInfo = result.fetchone()
+        cursor.execute("""
+            SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
+                            s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
+            FROM subcontractors s
+            LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+            LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+            LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+            LEFT JOIN districts d ON b.District_id = d.District_id
+            LEFT JOIN states st ON d.State_Id = st.State_Id
+            WHERE s.Contractor_Id = %s
+        """, (contractor_id,))
+        contInfo = cursor.fetchone()
 
         if not contInfo:
             return "No contractor found", 404
@@ -3378,25 +2839,17 @@ def download_report(contractor_id):
         payments_map = {}
         extra_payments_map = {}  # Now using a map to organize extra payments by PMC
         if pmc_numbers:
-            # # First get payments with invoice_no
-            # query = f"""
-            #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-            #     FROM payment
-            #     WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
-            #     AND invoice_no IS NOT NULL
-            #     ORDER BY pmc_no, invoice_no
-            # """
-            # cursor.execute(query, pmc_numbers)
-            # payments = cursor.fetchall()
+            # First get payments with invoice_no
+            query = f"""
+                SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
+                FROM payment
+                WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
+                AND invoice_no IS NOT NULL
+                ORDER BY pmc_no, invoice_no
+            """
+            cursor.execute(query, pmc_numbers)
+            payments = cursor.fetchall()
 
-            pmc_list_str = ','.join(str(pmc) for pmc in pmc_numbers)
-            # e.g. 'PMC001,PMC002,PMC003'
-            cursor.callproc('GetPaymentsByPmcNosWithInvoice', [pmc_list_str])
-
-            for result in cursor.stored_results():
-                payments = result.fetchall()
-
-            print("payments by procedure:", payments)
             # Organize payments by PMC No & Invoice No
             for pay in payments:
                 key = (pay['pmc_no'], pay['invoice_no'])
@@ -3405,31 +2858,21 @@ def download_report(contractor_id):
                 payments_map[key].append(pay)
 
             # Then get extra payments (null invoice_no) and organize by PMC
-            # query = f"""
-            #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-            #     FROM payment
-            #     WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
-            #     AND invoice_no IS NULL
-            #     ORDER BY pmc_no
-            # """
-            # cursor.execute(query, pmc_numbers)
-            # extra_payments = cursor.fetchall()
-            pmc_list_str = ','.join(str(pmc) for pmc in pmc_numbers)
-            cursor.callproc('GetExtraPaymentsByPmcNos', [pmc_list_str])
-
-            for result in cursor.stored_results():
-                extra_payments = result.fetchall()
-            print(
-                "-----------------------------------------------------------------------------------------Extra Payment---------------------------------------------------------------")
-            print("Extra payment from produre", extra_payments)
+            query = f"""
+                SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
+                FROM payment
+                WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
+                AND invoice_no IS NULL
+                ORDER BY pmc_no
+            """
+            cursor.execute(query, pmc_numbers)
+            extra_payments = cursor.fetchall()
 
             for pay in extra_payments:
                 if pay['pmc_no'] not in extra_payments_map:
                     extra_payments_map[pay['pmc_no']] = []
                 extra_payments_map[pay['pmc_no']].append(pay)
-            print(
-                "-----------------------------------------------------------------------------------------Extra Payment MAP --------------------------------------------------------------")
-            print("Extra payment MAp from produre", extra_payments_map)
+
         # Create Excel workbook
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -3592,6 +3035,7 @@ def download_report(contractor_id):
                             payment["UTR"]
                         ]
 
+
                         sheet.append(row)
                         processed_payments.add(payment_id)
 
@@ -3657,7 +3101,6 @@ def download_report(contractor_id):
     workbook.close()
 
     return send_from_directory(output_folder, f"Contractor_Report_{contractor_id}.xlsx", as_attachment=True)
-
 
 # show report by pmc no
 @app.route('/pmc_report/<pmc_no>')
@@ -3740,33 +3183,25 @@ def pmc_report(pmc_no):
 
         else:
             # Query with hold types
-            # query = """
-            #     SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-            #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-            #            i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
-            #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount,
-            #            i.Final_Amount, h.hold_amount, ht.hold_type
-            #     FROM invoice i
-            #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-            #     LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
-            #     LEFT JOIN invoice_subcontractor_hold_join h ON i.Invoice_Id = h.Invoice_Id
-            #     LEFT JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-            #     WHERE a.PMC_No = %s AND a.Contractor_Id = %s
-            #     AND (ht.hold_type_id IS NULL OR ht.hold_type_id IN ({0}))
-            #     ORDER BY i.Invoice_Date, i.Invoice_No
-            # """.format(','.join(['%s'] * len(hold_type_ids)))
+            query = """
+                SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
+                       i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
+                       i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
+                       i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount,
+                       i.Final_Amount, h.hold_amount, ht.hold_type
+                FROM invoice i
+                LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+                LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
+                LEFT JOIN invoice_subcontractor_hold_join h ON i.Invoice_Id = h.Invoice_Id
+                LEFT JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+                WHERE a.PMC_No = %s AND a.Contractor_Id = %s
+                AND (ht.hold_type_id IS NULL OR ht.hold_type_id IN ({0}))
+                ORDER BY i.Invoice_Date, i.Invoice_No
+            """.format(','.join(['%s'] * len(hold_type_ids)))
 
-            # params = [pmc_no, pmc_info["Contractor_Id"]] + hold_type_ids
-            # cursor.execute(query, params)
-            # invoices = cursor.fetchall()
-            hold_type_ids_str = ','.join(map(str, hold_type_ids))
-            cursor.callproc('GetInvoiceDetails', [pmc_no, pmc_info["Contractor_Id"], hold_type_ids_str])
-
-            # Fetch the results
-            for result in cursor.stored_results():
-                invoices = result.fetchall()
-                for invoice in invoices:
-                    print(invoice)
+            params = [pmc_no, pmc_info["Contractor_Id"]] + hold_type_ids
+            cursor.execute(query, params)
+            invoices = cursor.fetchall()
             hold_amount_total = sum(row['hold_amount'] or 0 for row in invoices if row['hold_amount'] is not None)
 
         # Calculate invoice totals
@@ -3846,349 +3281,7 @@ def pmc_report(pmc_no):
                            total=totals)
 
 
-# # Download report by PMC No
-# @app.route('/download_pmc_report/<pmc_no>')
-# def download_pmc_report(pmc_no):
-#     connection = config.get_db_connection()
-#     output_folder = "static/download"
-#     output_file = os.path.join(output_folder, f"PMC_Report_{pmc_no}.xlsx")
-
-#     if not os.path.exists(output_folder):
-#         os.makedirs(output_folder)
-
-#     cursor = connection.cursor(dictionary=True)
-
-#     try:
-#         # # Fetch Contractor Details using PMC No
-#         # cursor.execute("""
-#         #     SELECT DISTINCT s.Contractor_Id, s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
-#         #                     s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
-#         #     FROM subcontractors s
-#         #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-#         #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-#         #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-#         #     LEFT JOIN districts d ON b.District_id = d.District_id
-#         #     LEFT JOIN states st ON d.State_Id = st.State_Id
-#         #     WHERE asg.PMC_No = %s
-#         # """, (pmc_no,))
-#         # contractor_info = cursor.fetchone()
-#         cursor.callproc('GetContractorDetailsByPMC', [pmc_no])
-
-#         # Now fetch the result:
-#         for result in cursor.stored_results():
-#             contractor_info = result.fetchone()
-
-#         if not contractor_info:
-#             return "No contractor found for this PMC No", 404
-
-#         # # Fetch distinct hold types present for the contractor
-#         # cursor.execute("""
-#         #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
-#         #     FROM invoice_subcontractor_hold_join h
-#         #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-#         #     WHERE h.Contractor_Id = %s
-#         # """, (contractor_info["Contractor_Id"],))
-#         # hold_types = cursor.fetchall()
-#         cursor.callproc('GetHoldTypesByContractor', [contractor_info["Contractor_Id"]])
-
-#         for result in cursor.stored_results():
-#             hold_types = result.fetchall()
-
-#         hold_type_map = {ht['hold_type_id']: ht['hold_type'] for ht in hold_types}
-
-#         # # # Fetch Invoices & GST Releases
-#         # cursor.execute("""
-#         #     SELECT DISTINCT i.Invoice_Id, i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-#         #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-#         #            i.After_Debit_Amount, i.GST_Amount, i.Amount, i.TDS_Amount, i.SD_Amount,
-#         #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount,
-#         #            g.pmc_no AS gst_pmc_no, g.invoice_no AS gst_invoice_no,
-#         #            g.basic_amount AS gst_basic_amount, g.final_amount AS gst_final_amount
-#         #     FROM invoice i
-#         #     LEFT JOIN assign_subcontractors asg ON i.PMC_No = asg.PMC_No
-#         #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-#         #     LEFT JOIN gst_release g ON i.PMC_No = g.pmc_no AND i.Invoice_No = g.invoice_no
-#         #     WHERE asg.PMC_No = %s
-#         #     ORDER BY i.Invoice_Date, i.Invoice_No
-#         # """, (pmc_no,))
-#         # invoices = cursor.fetchall()
-
-#         cursor.callproc('GetInvoicesAndGstReleaseByPmcNo', [pmc_no])
-
-#         for result in cursor.stored_results():
-#             invoices = result.fetchall()
-#         print("pmc_report invoice data:",invoices)
-
-#         # cursor.callproc('GetInvoicesAndGSTReleasesByPMC', [pmc_no])
-
-#         # for result in cursor.stored_results():
-#         #     invoices = result.fetchall()
-
-#         # # Fetch Hold Amounts separately
-#         # cursor.execute("""
-#         #     SELECT h.Invoice_Id, ht.hold_type_id, h.hold_amount
-#         #     FROM invoice_subcontractor_hold_join h
-#         #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-#         #     WHERE h.Contractor_Id = %s
-#         # """, (contractor_info["Contractor_Id"],))
-#         # hold_amounts = cursor.fetchall()
-#         cursor.callproc('GetHoldAmountsByContractor', [contractor_info["Contractor_Id"]])
-
-#         for result in cursor.stored_results():
-#             hold_amounts = result.fetchall()
-
-#         # Create a mapping of invoice_id to hold amounts by type
-#         hold_data = {}
-#         for h in hold_amounts:
-#             hold_data.setdefault(h['Invoice_Id'], {})[h['hold_type_id']] = h['hold_amount']
-
-#         # # Fetch all Payments for the PMC number
-#         # cursor.execute("""
-#         #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-#         #     FROM payment
-#         #     WHERE pmc_no = %s
-#         #     ORDER BY invoice_no
-#         # """, (pmc_no,))
-#         # all_payments = cursor.fetchall()
-#         cursor.callproc('GetAllPaymentsByPMC', [pmc_no])
-
-#         for result in cursor.stored_results():
-#             all_payments = result.fetchall()
-
-#         # Organize payments by Invoice No (both regular and GST release notes)
-#         payments_map = {}
-#         extra_payments = []
-#         for pay in all_payments:
-#             if pay['invoice_no']:
-#                 key = pay['invoice_no']
-#                 if key not in payments_map:
-#                     payments_map[key] = []
-#                 payments_map[key].append(pay)
-#             else:
-#                 extra_payments.append(pay)
-
-#         # Create Excel workbook
-#         workbook = openpyxl.Workbook()
-#         sheet = workbook.active
-#         sheet.title = "PMC Report"
-
-#         # Write Contractor Details
-#         sheet.append(["", "", "Laxmi Civil Engineering Services PVT. LTD.", "", ""])
-#         sheet.append(
-#             ["Contractor Name", contractor_info["Contractor_Name"], " ", "GST No", contractor_info["GST_No"], " ",
-#              "GST Type", contractor_info["GST_Registration_Type"]])
-#         sheet.append(["State", contractor_info["State_Name"], " ", "PAN No", contractor_info["PAN_No"], " ", "Address",
-#                       contractor_info["Address"]])
-#         sheet.append(["District", contractor_info["District_Name"], " ", "Mobile No", contractor_info["Mobile_No"]])
-#         sheet.append(["Block", contractor_info["Block_Name"], " ", "Email", contractor_info["Email"]])
-#         sheet.append([])
-
-#         # Table Headers - include all hold types as separate columns
-#         base_headers = ["PMC No", "Village", "Work Type", "Invoice Details", "Invoice Date", "Invoice No",
-#                         "Basic Amount", "Debit", "After Debit Amount", "GST (18%)", "Amount", "TDS (1%)",
-#                         "SD (5%)", "On Commission", "Hydro Testing", "GST SD Amount"]
-
-#         hold_headers = [ht['hold_type'] for ht in hold_types]
-
-#         payment_headers = ["Final Amount", "Payment Amount", "TDS Payment", "Total Paid", "UTR"]
-
-#         sheet.append(base_headers + hold_headers + payment_headers)
-
-#         seen_invoices = set()
-#         seen_gst_notes = set()
-#         processed_payments = set()
-
-#         # Process invoices
-#         for inv in invoices:
-#             invoice_no = inv["Invoice_No"]
-#             payments = payments_map.get(invoice_no, [])
-
-#             # Process invoice row with first payment (if exists)
-#             if invoice_no not in seen_invoices:
-#                 seen_invoices.add(invoice_no)
-#                 first_payment = payments[0] if len(payments) > 0 else None
-
-#                 # Base invoice data
-#                 row = [
-#                     pmc_no, inv["Village_Name"], inv["Work_Type"], inv["Invoice_Details"],
-#                     inv["Invoice_Date"], invoice_no, inv["Basic_Amount"], inv["Debit_Amount"],
-#                     inv["After_Debit_Amount"], inv["GST_Amount"], inv["Amount"], inv["TDS_Amount"],
-#                     inv["SD_Amount"], inv["On_Commission"], inv["Hydro_Testing"], inv["GST_SD_Amount"]
-#                 ]
-
-#                 # Add hold amounts for each hold type
-#                 invoice_holds = hold_data.get(inv["Invoice_Id"], {})
-#                 for ht_id in hold_type_map.keys():
-#                     row.append(invoice_holds.get(ht_id, ""))
-
-#                 # Add payment information
-#                 row += [
-#                     inv["Final_Amount"],
-#                     first_payment["Payment_Amount"] if first_payment else "",
-#                     first_payment["TDS_Payment_Amount"] if first_payment else "",
-#                     first_payment["Total_amount"] if first_payment else "",
-#                     first_payment["UTR"] if first_payment else ""
-#                 ]
-
-#                 sheet.append(row)
-
-#                 if first_payment:
-#                     payment_id = f"{invoice_no}-{first_payment['Payment_Amount']}-{first_payment.get('UTR', '')}"
-#                     processed_payments.add(payment_id)
-
-#             # Process GST release if exists (only if we have a matching GST record)
-#             if inv["gst_pmc_no"] and inv["gst_invoice_no"] and inv["gst_invoice_no"] not in seen_gst_notes:
-#                 seen_gst_notes.add(inv["gst_invoice_no"])
-
-#                 # Find the payment that matches this GST release
-#                 gst_payment = None
-#                 for payment in payments[1:]:  # Skip first payment (already used for invoice)
-#                     if payment['invoice_no'] == inv["gst_invoice_no"]:
-#                         gst_payment = payment
-#                         break
-
-#                 # If no payment found in the invoice's payments, check all payments
-#                 if not gst_payment:
-#                     gst_payments = payments_map.get(inv["gst_invoice_no"], [])
-#                     if gst_payments:
-#                         gst_payment = gst_payments[0]
-
-#                 # GST release row
-#                 row = [
-#                     pmc_no, "", "", "GST Release Note", "", inv["gst_invoice_no"],
-#                     inv["gst_basic_amount"], "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-#                 ]
-
-#                 # Empty holds for GST release
-#                 row += ["" for _ in hold_headers]
-
-#                 # Add payment information
-#                 row += [
-#                     inv["gst_final_amount"],
-#                     gst_payment["Payment_Amount"] if gst_payment else "",
-#                     gst_payment["TDS_Payment_Amount"] if gst_payment else "",
-#                     gst_payment["Total_amount"] if gst_payment else "",
-#                     gst_payment["UTR"] if gst_payment else ""
-#                 ]
-
-#                 sheet.append(row)
-
-#                 if gst_payment:
-#                     payment_id = f"{inv['gst_invoice_no']}-{gst_payment['Payment_Amount']}-{gst_payment.get('UTR', '')}"
-#                     processed_payments.add(payment_id)
-
-#             # Process remaining payments as extra payments
-#             for payment in payments[1:]:
-#                 payment_id = f"{payment['invoice_no']}-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
-#                 if payment_id not in processed_payments:
-#                     row = [
-#                         pmc_no, "", "", "", "", payment['invoice_no'],
-#                         "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-#                     ]
-
-#                     # Empty holds for extra payments
-#                     row += ["" for _ in hold_headers]
-
-#                     # Add payment information
-#                     row += [
-#                         "",
-#                         payment["Payment_Amount"],
-#                         payment["TDS_Payment_Amount"],
-#                         payment["Total_amount"],
-#                         payment["UTR"]
-#                     ]
-
-#                     sheet.append(row)
-#                     processed_payments.add(payment_id)
-
-#         # Process extra payments (null invoice_no)
-#         for payment in extra_payments:
-#             payment_id = f"null-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
-#             if payment_id not in processed_payments:
-#                 row = [
-#                     pmc_no, "", "", "", "", "",
-#                     "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-#                 ]
-
-#                 # Empty holds for null invoice payments
-#                 row += ["" for _ in hold_headers]
-
-#                 # Add payment information
-#                 row += [
-#                     "",
-#                     payment["Payment_Amount"],
-#                     payment["TDS_Payment_Amount"],
-#                     payment["Total_amount"],
-#                     payment["UTR"]
-#                 ]
-
-#                 sheet.append(row)
-#                 processed_payments.add(payment_id)
-
-#         # Calculate totals
-#         total_basic_amount = 0
-#         total_tds_amount = 0
-#         total_sd_amount = 0
-#         total_on_commission = 0
-#         total_hold_amount = 0
-#         total_final_amount = 0
-#         total_payment_amount = 0
-#         total_tds_payment_amount = 0
-#         total_total_paid = 0
-
-#         for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
-#             try:
-#                 total_basic_amount += float(row[6] or 0)  # Basic_Amount
-#                 total_tds_amount += float(row[11] or 0)  # TDS_Amount
-#                 total_sd_amount += float(row[12] or 0)  # SD_Amount
-#                 total_on_commission += float(row[13] or 0)  # On_Commission
-#                 total_final_amount += float(row[-5] or 0)  # Final_Amount
-#                 total_payment_amount += float(row[-4] or 0)  # Payment_Amount
-#                 total_tds_payment_amount += float(row[-3] or 0)  # TDS_Payment
-#                 total_total_paid += float(row[-2] or 0)  # Total_Paid
-
-#                 # Sum of hold amounts
-#                 hold_start_col = len(base_headers)
-#                 hold_end_col = hold_start_col + len(hold_headers)
-#                 total_hold_amount += sum(float(row[i] or 0) for i in range(hold_start_col, hold_end_col))
-#             except (ValueError, IndexError, TypeError):
-#                 continue
-
-#         # Append totals row
-#         totals_row = [
-#             "TOTAL", "", "", "", "", "",
-#             total_basic_amount, "", "", "", "", total_tds_amount, total_sd_amount,
-#             total_on_commission, "", "",  # Empty GST SD Amount
-#         ]
-
-#         # Add hold totals
-#         totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
-
-#         # Add payment totals
-#         totals_row += [
-#             total_final_amount,
-#             total_payment_amount,
-#             total_tds_payment_amount,
-#             total_total_paid,
-#             ""  # UTR column remains empty
-#         ]
-
-#         sheet.append([])
-#         sheet.append(totals_row)
-
-#         # Make totals row bold
-#         for cell in sheet[sheet.max_row]:
-#             cell.font = Font(bold=True)
-
-#         # Save Excel file
-#         workbook.save(output_file)
-#         workbook.close()
-
-#     finally:
-#         cursor.close()
-#         connection.close()
-
-#     return send_from_directory(output_folder, f"PMC_Report_{pmc_no}.xlsx", as_attachment=True)
+# Download report by PMC No
 @app.route('/download_pmc_report/<pmc_no>')
 def download_pmc_report(pmc_no):
     connection = config.get_db_connection()
@@ -4201,14 +3294,36 @@ def download_pmc_report(pmc_no):
     cursor = connection.cursor(dictionary=True)
 
     try:
+        # # Fetch Contractor Details using PMC No
+        # cursor.execute("""
+        #     SELECT DISTINCT s.Contractor_Id, s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
+        #                     s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
+        #     FROM subcontractors s
+        #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+        #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+        #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+        #     LEFT JOIN districts d ON b.District_id = d.District_id
+        #     LEFT JOIN states st ON d.State_Id = st.State_Id
+        #     WHERE asg.PMC_No = %s
+        # """, (pmc_no,))
+        # contractor_info = cursor.fetchone()
         cursor.callproc('GetContractorDetailsByPMC', [pmc_no])
 
+        # Now fetch the result:
         for result in cursor.stored_results():
             contractor_info = result.fetchone()
 
         if not contractor_info:
             return "No contractor found for this PMC No", 404
 
+        # # Fetch distinct hold types present for the contractor
+        # cursor.execute("""
+        #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
+        #     FROM invoice_subcontractor_hold_join h
+        #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+        #     WHERE h.Contractor_Id = %s
+        # """, (contractor_info["Contractor_Id"],))
+        # hold_types = cursor.fetchall()
         cursor.callproc('GetHoldTypesByContractor', [contractor_info["Contractor_Id"]])
 
         for result in cursor.stored_results():
@@ -4216,25 +3331,59 @@ def download_pmc_report(pmc_no):
 
         hold_type_map = {ht['hold_type_id']: ht['hold_type'] for ht in hold_types}
 
-        cursor.callproc('GetInvoicesAndGstReleaseByPmcNo', [pmc_no])
+        # # Fetch Invoices & GST Releases
+        # cursor.execute("""
+        #     SELECT DISTINCT i.Invoice_Id, i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
+        #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
+        #            i.After_Debit_Amount, i.GST_Amount, i.Amount, i.TDS_Amount, i.SD_Amount,
+        #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount,
+        #            g.pmc_no AS gst_pmc_no, g.invoice_no AS gst_invoice_no,
+        #            g.basic_amount AS gst_basic_amount, g.final_amount AS gst_final_amount
+        #     FROM invoice i
+        #     LEFT JOIN assign_subcontractors asg ON i.PMC_No = asg.PMC_No
+        #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+        #     LEFT JOIN gst_release g ON i.PMC_No = g.pmc_no AND i.Invoice_No = g.invoice_no
+        #     WHERE asg.PMC_No = %s
+        #     ORDER BY i.Invoice_Date, i.Invoice_No
+        # """, (pmc_no,))
+        # invoices = cursor.fetchall()
+        cursor.callproc('GetInvoicesAndGSTReleasesByPMC', [pmc_no])
 
         for result in cursor.stored_results():
             invoices = result.fetchall()
 
+        # # Fetch Hold Amounts separately
+        # cursor.execute("""
+        #     SELECT h.Invoice_Id, ht.hold_type_id, h.hold_amount
+        #     FROM invoice_subcontractor_hold_join h
+        #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+        #     WHERE h.Contractor_Id = %s
+        # """, (contractor_info["Contractor_Id"],))
+        # hold_amounts = cursor.fetchall()
         cursor.callproc('GetHoldAmountsByContractor', [contractor_info["Contractor_Id"]])
 
         for result in cursor.stored_results():
             hold_amounts = result.fetchall()
 
+        # Create a mapping of invoice_id to hold amounts by type
         hold_data = {}
         for h in hold_amounts:
             hold_data.setdefault(h['Invoice_Id'], {})[h['hold_type_id']] = h['hold_amount']
 
+        # # Fetch all Payments for the PMC number
+        # cursor.execute("""
+        #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
+        #     FROM payment
+        #     WHERE pmc_no = %s
+        #     ORDER BY invoice_no
+        # """, (pmc_no,))
+        # all_payments = cursor.fetchall()
         cursor.callproc('GetAllPaymentsByPMC', [pmc_no])
 
         for result in cursor.stored_results():
             all_payments = result.fetchall()
 
+        # Organize payments by Invoice No (both regular and GST release notes)
         payments_map = {}
         extra_payments = []
         for pay in all_payments:
@@ -4246,6 +3395,7 @@ def download_pmc_report(pmc_no):
             else:
                 extra_payments.append(pay)
 
+        # Create Excel workbook
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "PMC Report"
@@ -4331,17 +3481,17 @@ def download_pmc_report(pmc_no):
                     if gst_payments:
                         gst_payment = gst_payments[0]
 
-                # GST release row (this will be in the same row, after the invoice information)
-                gst_row = [
+                # GST release row
+                row = [
                     pmc_no, "", "", "GST Release Note", "", inv["gst_invoice_no"],
                     inv["gst_basic_amount"], "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
                 ]
 
                 # Empty holds for GST release
-                gst_row += ["" for _ in hold_headers]
+                row += ["" for _ in hold_headers]
 
-                # Add GST payment information (same columns as invoice payment information)
-                gst_row += [
+                # Add payment information
+                row += [
                     inv["gst_final_amount"],
                     gst_payment["Payment_Amount"] if gst_payment else "",
                     gst_payment["TDS_Payment_Amount"] if gst_payment else "",
@@ -4349,13 +3499,13 @@ def download_pmc_report(pmc_no):
                     gst_payment["UTR"] if gst_payment else ""
                 ]
 
-                sheet.append(gst_row)
+                sheet.append(row)
 
                 if gst_payment:
                     payment_id = f"{inv['gst_invoice_no']}-{gst_payment['Payment_Amount']}-{gst_payment.get('UTR', '')}"
                     processed_payments.add(payment_id)
 
-            # Process remaining payments as extra payments (if any)
+            # Process remaining payments as extra payments
             for payment in payments[1:]:
                 payment_id = f"{payment['invoice_no']}-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
                 if payment_id not in processed_payments:
@@ -4491,12 +3641,9 @@ def add_hold_type():
                 return jsonify({"status": "error", "message": "Hold Type must start with a letter."}), 400
 
             # Validation: Check if it already exists (case-insensitive)
-            # cursor.execute("SELECT COUNT(*) AS count FROM hold_types WHERE LOWER(hold_type) = LOWER(%s)", (hold_type,))
-            # if cursor.fetchone()['count'] > 0:
-            #     return jsonify({"status": "error", "message": "This Hold Type already exists."}), 400
-            # Call the procedure to check if the hold_type exists
-
-            cursor.callproc('CheckHoldTypeExists', [hold_type])
+            cursor.execute("SELECT COUNT(*) AS count FROM hold_types WHERE LOWER(hold_type) = LOWER(%s)", (hold_type,))
+            if cursor.fetchone()['count'] > 0:
+                return jsonify({"status": "error", "message": "This Hold Type already exists."}), 400
 
             try:
                 # Insert new hold type into the database
@@ -4518,7 +3665,6 @@ def add_hold_type():
         connection.close()
 
     return render_template('add_hold_type.html', Hold_Types_data=hold_types)
-
 
 # Route to Update Hold Type
 # @app.route('/update_hold_type/<int:id>', methods=['POST', 'GET'])
@@ -4650,8 +3796,6 @@ def delete_hold_type(id):
     finally:
         cursor.close()
         connection.close()
-
-
 # -- end hold types controlller --------------------
 
 
