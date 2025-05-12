@@ -1874,6 +1874,183 @@ def upload():
 
 
 # Show excel data in tables6
+# @app.route('/show_table/<filename>')
+# def show_table(filename):
+#     global data
+#     data = []
+#
+#     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#     wb = openpyxl.load_workbook(filepath, data_only=True)
+#     sheet = wb.active
+#
+#     # Extract key file information from the first 4 rows
+#     file_info = {
+#         "Subcontractor": sheet.cell(row=1, column=2).value,
+#         "State": sheet.cell(row=2, column=2).value,
+#         "District": sheet.cell(row=3, column=2).value,
+#         "Block": sheet.cell(row=4, column=2).value,
+#     }
+#
+#     errors = []
+#     subcontractor_data = None
+#     state_data = None
+#     district_data = None
+#     block_data = None
+#
+#     # Database connection
+#     connection = config.get_db_connection()
+#     if connection:
+#         try:
+#             cursor = connection.cursor(dictionary=True)
+#
+#             # Validate State
+#             # cursor.execute("SELECT State_ID, State_Name FROM states WHERE State_Name = %s", (file_info['State'],))
+#             # state_data = cursor.fetchone()
+#             cursor.callproc('GetStateByName', [file_info['State']])
+#             for result in cursor.stored_results():
+#                 state_data = result.fetchone()
+#
+#             if not state_data:
+#                 errors.append(f"State '{file_info['State']}' is not valid. Please add it.")
+#
+#             # Validate District
+#             if state_data:
+#                 # cursor.execute(
+#                 #     "SELECT District_ID, District_Name FROM districts WHERE District_Name = %s AND State_ID = %s",
+#                 #     (file_info['District'], state_data['State_ID'])
+#                 # )
+#                 # district_data = cursor.fetchone()
+#                 cursor.callproc('GetDistrictByNameAndStates', [file_info['District'], state_data['State_ID']])
+#                 for result in cursor.stored_results():
+#                     district_data = result.fetchone()
+#
+#                 if not district_data:
+#                     errors.append(
+#                         f"District '{file_info['District']}' is not valid under state '{file_info['State']}'.")
+#
+#             # Validate Block
+#             if district_data:
+#                 # cursor.execute(
+#                 #     "SELECT Block_Id, Block_Name FROM blocks WHERE Block_Name = %s AND District_ID = %s",
+#                 #     (file_info['Block'], district_data['District_ID'])
+#                 # )
+#                 # block_data = cursor.fetchone()
+#                 cursor.callproc('GetBlockByNameAndDistricts', [file_info['Block'], district_data['District_ID']])
+#                 for result in cursor.stored_results():
+#                     block_data = result.fetchone()
+#
+#                 if not block_data:
+#                     errors.append(
+#                         f"Block '{file_info['Block']}' is not valid under district '{file_info['District']}'.")
+#
+#             # old code
+#             # # Validate Subcontractor
+#             # cursor.execute("SELECT Contractor_Id, Contractor_Name FROM SubContractors WHERE Contractor_Name = %s",
+#             #                (file_info['Subcontractor'],))
+#             # subcontractor_data = cursor.fetchone()
+#             cursor.callproc('GetSubcontractorByName', [file_info['Subcontractor']])
+#             for result in cursor.stored_results():
+#                 subcontractor_data = result.fetchone()
+#
+#             if not subcontractor_data:
+#                 # cursor.execute("INSERT INTO subcontractors (Contractor_Name) VALUES (%s)",
+#                 #                (file_info['Subcontractor'],))
+#                 # connection.commit()
+#                 cursor.callproc('InsertSubcontractor', [file_info['Subcontractor']])
+#                 connection.commit()
+#
+#                 # cursor.execute("SELECT Contractor_Id, Contractor_Name FROM SubContractors WHERE Contractor_Name = %s",
+#                 #                (file_info['Subcontractor'],))
+#                 # subcontractor_data = cursor.fetchone()
+#                 cursor.callproc('GetSubcontractorByName', [file_info['Subcontractor']])
+#                 for result in cursor.stored_results():
+#                     subcontractor_data = result.fetchone()
+#
+#             # new code
+#             # cursor.callproc('ValidateAndInsertSubcontractor', (file_info['Subcontractor'], 0, ''))
+#             #
+#             # for con in cursor.stored_results():
+#             #     subcontractor_data = con.fetchone()
+#             #     print("subcon:",subcontractor_data)
+#             #
+#             # print("subcontractor_data",subcontractor_data)
+#
+#             # Get hold types data from database (for faster lookup)
+#             # cursor.execute("SELECT hold_type_id, hold_type FROM hold_types")
+#             # hold_types_data = cursor.fetchall()
+#
+#             cursor.callproc("GetAllHoldTypes")
+#             for ht in cursor.stored_results():
+#                 hold_types_data = ht.fetchall()
+#
+#             hold_types_lookup = {row['hold_type'].lower(): row['hold_type_id'] for row in hold_types_data if
+#                                  row['hold_type']}
+#
+#             cursor.close()
+#         except mysql.connector.Error as e:
+#             print(f"Database error: {e}")
+#             return "Database operation failed", 500
+#         finally:
+#             connection.close()
+#
+#     # Extract dynamic variable names from row 5 and detect "hold" columns
+#     variables = {}
+#     hold_columns = []
+#     hold_counter = 0
+#
+#     for j in range(1, sheet.max_column + 1):
+#         col_value = sheet.cell(row=5, column=j).value
+#         if col_value:
+#             variables[col_value] = j  # Store column name with its position
+#
+#             # Check if the column header contains the word 'hold'
+#             if 'hold' in str(col_value).lower():
+#                 hold_counter += 1
+#                 # Lookup hold type id from database
+#                 hold_type_key = str(col_value).lower().strip()
+#                 hold_type_id = hold_types_lookup.get(hold_type_key, None)
+#                 hold_columns.append({
+#                     'column_name': col_value,
+#                     'column_number': j,
+#                     'hold_type_id': hold_type_id
+#                 })
+#
+#     # Extract data dynamically based on row numbers
+#     for i in range(6, sheet.max_row + 1):
+#         row_data = {}
+#         if sheet.cell(row=i, column=1).value:
+#             row_data["Row Number"] = i  # Store row number
+#             for var_name, col_num in variables.items():
+#                 row_data[var_name] = sheet.cell(row=i, column=col_num).value
+#             # Check if at least 4 non-empty cells exist in the row
+#             if sum(1 for value in row_data.values() if value) >= 4:
+#                 data.append(row_data)
+#
+#     # For debugging or console output, you can print the hold columns info
+#     for hold in hold_columns:
+#         if hold['hold_type_id']:
+#             print(
+#                 f" if Column: {hold['column_name']}, Column Number: {hold['column_number']}, Hold Type ID: {hold['hold_type_id']}")
+#         else:
+#             errors.append(
+#                 f"Hold Type not added ! Column name '{hold['column_name']}'.")
+#             print(
+#                 f" else Column: {hold['column_name']}, Column Number: {hold['column_number']}, Hold Type ID: {hold['hold_type_id']}")
+#
+#     return render_template(
+#         'show_excel_file.html',
+#         file_info=file_info,
+#         variables=variables,
+#         data=data,
+#         subcontractor_data=subcontractor_data,
+#         state_data=state_data,
+#         district_data=district_data,
+#         block_data=block_data,
+#         errors=errors,
+#         hold_columns=hold_columns,
+#         hold_counter=hold_counter
+#     )
+
 @app.route('/show_table/<filename>')
 def show_table(filename):
     global data
@@ -1883,7 +2060,6 @@ def show_table(filename):
     wb = openpyxl.load_workbook(filepath, data_only=True)
     sheet = wb.active
 
-    # Extract key file information from the first 4 rows
     file_info = {
         "Subcontractor": sheet.cell(row=1, column=2).value,
         "State": sheet.cell(row=2, column=2).value,
@@ -1897,15 +2073,12 @@ def show_table(filename):
     district_data = None
     block_data = None
 
-    # Database connection
     connection = config.get_db_connection()
     if connection:
         try:
             cursor = connection.cursor(dictionary=True)
 
-            # Validate State
-            # cursor.execute("SELECT State_ID, State_Name FROM states WHERE State_Name = %s", (file_info['State'],))
-            # state_data = cursor.fetchone()
+            print(f"Calling GetStateByName with: {file_info['State']}")
             cursor.callproc('GetStateByName', [file_info['State']])
             for result in cursor.stored_results():
                 state_data = result.fetchone()
@@ -1913,87 +2086,53 @@ def show_table(filename):
             if not state_data:
                 errors.append(f"State '{file_info['State']}' is not valid. Please add it.")
 
-            # Validate District
             if state_data:
-                # cursor.execute(
-                #     "SELECT District_ID, District_Name FROM districts WHERE District_Name = %s AND State_ID = %s",
-                #     (file_info['District'], state_data['State_ID'])
-                # )
-                # district_data = cursor.fetchone()
+                print(f"Calling GetDistrictByNameAndStates with: {file_info['District']}, {state_data['State_ID']}")
                 cursor.callproc('GetDistrictByNameAndStates', [file_info['District'], state_data['State_ID']])
                 for result in cursor.stored_results():
                     district_data = result.fetchone()
 
                 if not district_data:
-                    errors.append(
-                        f"District '{file_info['District']}' is not valid under state '{file_info['State']}'.")
+                    errors.append(f"District '{file_info['District']}' is not valid under state '{file_info['State']}'.")
 
-            # Validate Block
             if district_data:
-                # cursor.execute(
-                #     "SELECT Block_Id, Block_Name FROM blocks WHERE Block_Name = %s AND District_ID = %s",
-                #     (file_info['Block'], district_data['District_ID'])
-                # )
-                # block_data = cursor.fetchone()
+                print(f"Calling GetBlockByNameAndDistricts with: {file_info['Block']}, {district_data['District_ID']}")
                 cursor.callproc('GetBlockByNameAndDistricts', [file_info['Block'], district_data['District_ID']])
                 for result in cursor.stored_results():
                     block_data = result.fetchone()
 
                 if not block_data:
-                    errors.append(
-                        f"Block '{file_info['Block']}' is not valid under district '{file_info['District']}'.")
+                    errors.append(f"Block '{file_info['Block']}' is not valid under district '{file_info['District']}'.")
 
-            # old code
-            # # Validate Subcontractor
-            # cursor.execute("SELECT Contractor_Id, Contractor_Name FROM SubContractors WHERE Contractor_Name = %s",
-            #                (file_info['Subcontractor'],))
-            # subcontractor_data = cursor.fetchone()
+            print(f"Calling GetSubcontractorByName with: {file_info['Subcontractor']}")
             cursor.callproc('GetSubcontractorByName', [file_info['Subcontractor']])
             for result in cursor.stored_results():
                 subcontractor_data = result.fetchone()
 
             if not subcontractor_data:
-                # cursor.execute("INSERT INTO subcontractors (Contractor_Name) VALUES (%s)",
-                #                (file_info['Subcontractor'],))
-                # connection.commit()
+                print(f"Inserting subcontractor: {file_info['Subcontractor']}")
                 cursor.callproc('InsertSubcontractor', [file_info['Subcontractor']])
                 connection.commit()
-
-                # cursor.execute("SELECT Contractor_Id, Contractor_Name FROM SubContractors WHERE Contractor_Name = %s",
-                #                (file_info['Subcontractor'],))
-                # subcontractor_data = cursor.fetchone()
+                print(f"Calling GetSubcontractorByName again with: {file_info['Subcontractor']}")
                 cursor.callproc('GetSubcontractorByName', [file_info['Subcontractor']])
                 for result in cursor.stored_results():
                     subcontractor_data = result.fetchone()
 
-            # new code
-            # cursor.callproc('ValidateAndInsertSubcontractor', (file_info['Subcontractor'], 0, ''))
-            #
-            # for con in cursor.stored_results():
-            #     subcontractor_data = con.fetchone()
-            #     print("subcon:",subcontractor_data)
-            #
-            # print("subcontractor_data",subcontractor_data)
-
-            # Get hold types data from database (for faster lookup)
-            # cursor.execute("SELECT hold_type_id, hold_type FROM hold_types")
-            # hold_types_data = cursor.fetchall()
-
+            print("Calling GetAllHoldTypes")
             cursor.callproc("GetAllHoldTypes")
+            hold_types_data = []
             for ht in cursor.stored_results():
                 hold_types_data = ht.fetchall()
 
-            hold_types_lookup = {row['hold_type'].lower(): row['hold_type_id'] for row in hold_types_data if
-                                 row['hold_type']}
+            hold_types_lookup = {row['hold_type'].lower(): row['hold_type_id'] for row in hold_types_data if row['hold_type']}
 
             cursor.close()
         except mysql.connector.Error as e:
             print(f"Database error: {e}")
-            return "Database operation failed", 500
+            return f"Database operation failed: {e}", 500
         finally:
             connection.close()
 
-    # Extract dynamic variable names from row 5 and detect "hold" columns
     variables = {}
     hold_columns = []
     hold_counter = 0
@@ -2001,12 +2140,9 @@ def show_table(filename):
     for j in range(1, sheet.max_column + 1):
         col_value = sheet.cell(row=5, column=j).value
         if col_value:
-            variables[col_value] = j  # Store column name with its position
-
-            # Check if the column header contains the word 'hold'
+            variables[col_value] = j
             if 'hold' in str(col_value).lower():
                 hold_counter += 1
-                # Lookup hold type id from database
                 hold_type_key = str(col_value).lower().strip()
                 hold_type_id = hold_types_lookup.get(hold_type_key, None)
                 hold_columns.append({
@@ -2015,27 +2151,21 @@ def show_table(filename):
                     'hold_type_id': hold_type_id
                 })
 
-    # Extract data dynamically based on row numbers
     for i in range(6, sheet.max_row + 1):
         row_data = {}
         if sheet.cell(row=i, column=1).value:
-            row_data["Row Number"] = i  # Store row number
+            row_data["Row Number"] = i
             for var_name, col_num in variables.items():
                 row_data[var_name] = sheet.cell(row=i, column=col_num).value
-            # Check if at least 4 non-empty cells exist in the row
             if sum(1 for value in row_data.values() if value) >= 4:
                 data.append(row_data)
 
-    # For debugging or console output, you can print the hold columns info
     for hold in hold_columns:
         if hold['hold_type_id']:
-            print(
-                f" if Column: {hold['column_name']}, Column Number: {hold['column_number']}, Hold Type ID: {hold['hold_type_id']}")
+            print(f" if Column: {hold['column_name']}, Column Number: {hold['column_number']}, Hold Type ID: {hold['hold_type_id']}")
         else:
-            errors.append(
-                f"Hold Type not added ! Column name '{hold['column_name']}'.")
-            print(
-                f" else Column: {hold['column_name']}, Column Number: {hold['column_number']}, Hold Type ID: {hold['hold_type_id']}")
+            errors.append(f"Hold Type not added ! Column name '{hold['column_name']}'.")
+            print(f" else Column: {hold['column_name']}, Column Number: {hold['column_number']}, Hold Type ID: {hold['hold_type_id']}")
 
     return render_template(
         'show_excel_file.html',
@@ -2050,6 +2180,7 @@ def show_table(filename):
         hold_columns=hold_columns,
         hold_counter=hold_counter
     )
+
 # Show excel data in tables6
 # @app.route('/show_table/<filename>')
 # def show_table(filename):
