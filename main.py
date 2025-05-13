@@ -4785,7 +4785,7 @@ def download_pmc_report(pmc_no):
         sheet.append([])
         sheet.append(totals_row)
         #new code added for small chart---summary
-        # total_hold_amount=Decimal('0.00')
+        total_hold_amount=Decimal('0.00')
         for data in hold_amounts:
             total_hold_amount = total_hold_amount + data.get('hold_amount', Decimal('0.00'))
         print("Total Hold Amount after adding the hold amount ", total_hold_amount)
