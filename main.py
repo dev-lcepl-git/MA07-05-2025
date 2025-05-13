@@ -4535,7 +4535,9 @@ def download_pmc_report(pmc_no):
 
         for result in cursor.stored_results():
             invoices = result.fetchall()
-
+        total_tds=Decimal('0.00')
+        for data in invoices:
+            total_tds=total_tds+data.get('TDS_Amount',Decimal('0.00'))
         cursor.callproc('GetHoldAmountsByContractor', [contractor_info["Contractor_Id"]])
 
         for result in cursor.stored_results():
@@ -4784,7 +4786,7 @@ def download_pmc_report(pmc_no):
         # Add your values
         sheet.append(["Advance/Surplus", str(total_final_amount - total_total_paid)])
         sheet.append(["Total Hold Amount", str(total_hold_amount)])
-        sheet.append(["Amount With TDS", str(total_tds_payment_amount)])
+        sheet.append(["Amount With TDS", str(total_tds)])
 # new coded ended here for summary chart
         # Make totals row bold
         for cell in sheet[sheet.max_row]:
