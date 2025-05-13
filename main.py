@@ -4760,7 +4760,7 @@ def download_pmc_report(pmc_no):
             total_basic_amount, "", "", "", "", total_tds_amount, total_sd_amount,
             total_on_commission, "", "",  # Empty GST SD Amount
         ]
-        if not hold_headers:
+        if  hold_headers:
             totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
 
         # Add payment totals
