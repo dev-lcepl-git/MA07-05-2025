@@ -3927,9 +3927,11 @@ def download_report(contractor_id):
         total_basic_amount, "", "", "", "", total_tds_amount, total_sd_amount,
         total_on_commission, "", "",  # Empty GST SD Amount
     ]
+    if hold_headers:
+        totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
 
     # Add empty placeholders for hold types
-    totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
+    # totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
 
     # Add totals for Final Amount and Total Amount
     totals_row += [
@@ -3958,7 +3960,7 @@ def download_report(contractor_id):
     sheet.append(["Description", "Amount"])
 
     # Add your values
-    sheet.append(["Advance/Surplus", str(total_final_amount - total_total_amount)])
+    sheet.append(["Advance/Surplus", str( total_final_amount - total_total_amount)])
     sheet.append(["Total Hold Amount", str(total_hold_amount)])
     sheet.append(["Amount With TDS", str(total_tds_amount)])
     #new added code end here for summary chart
@@ -4788,9 +4790,9 @@ def download_pmc_report(pmc_no):
         sheet.append(["Date", today_date])
         sheet.append(["Description", "Amount"])
         # Add your values
-        sheet.append(["Advance/Surplus", str(total_amount_paid)])
+        sheet.append(["Advance/Surplus", str(total_final_amount-total_payment_amount)])
         sheet.append(["Total Hold Amount", str(total_hold_amount)])
-        sheet.append(["Amount With TDS", str(total_tds)])
+        sheet.append(["Amount With TDS", str(total_tds_payment_amount)])
 # new coded ended here for summary chart
         # Make totals row bold
         for cell in sheet[sheet.max_row]:
