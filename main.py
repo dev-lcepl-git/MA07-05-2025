@@ -4545,11 +4545,11 @@ def download_pmc_report(pmc_no):
             invoices = result.fetchall()
         total_tds=Decimal('0.00')
         final_amount=Decimal('0.00')
-        total_hold_amount=Decimal('0.00')
+        # total_hold_amount=Decimal('0.00')
         for data in invoices:
             total_tds=total_tds+data.get('TDS_Amount',Decimal('0.00'))
             final_amount=final_amount+data.get('Final_Amount',Decimal('0.00'))
-            total_hold_amount=total_hold_amount+data.get('SD_Amount',Decimal('0.00'))+data.get('On_Commission',Decimal('0.00'))+data.get('Hydro_Testing',Decimal('0.00'))
+
         cursor.callproc('GetHoldAmountsByContractor', [contractor_info["Contractor_Id"]])
 
         for result in cursor.stored_results():
@@ -4786,6 +4786,11 @@ def download_pmc_report(pmc_no):
         sheet.append(totals_row)
         #new code added for small chart---summary
         total_hold_amount=Decimal('0.00')
+        for d in invoices:
+            total_hold_amount = total_hold_amount + d.get('SD_Amount', Decimal('0.00')) + d.get('On_Commission',
+                                                                                                      Decimal(
+                                                                                                          '0.00')) + d.get(
+                'Hydro_Testing', Decimal('0.00'))
         for data in hold_amounts:
             total_hold_amount = total_hold_amount + data.get('hold_amount', Decimal('0.00'))
         print("Total Hold Amount after adding the hold amount ", total_hold_amount)
