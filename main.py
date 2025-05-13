@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify, json
 import mysql.connector
 from mysql.connector import Error
@@ -3938,6 +3940,29 @@ def download_report(contractor_id):
     sheet.append([])
     sheet.append(totals_row)
 
+    #new coded for summary chart added
+    for data in hold_amounts:
+        total_hold_amount = total_hold_amount + data.get('hold_amount', Decimal('0.00'))
+    print("Total Hold Amount after adding the hold amount ", total_hold_amount)
+
+    from datetime import datetime
+
+    # Add payment information
+
+    # Get today's date with weekday
+    today_date = datetime.today().strftime('%A, %Y-%m-%d')
+
+    # Add headers (optional)
+    sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
+    sheet.append(["Date", today_date])
+    sheet.append(["Description", "Amount"])
+
+    # Add your values
+    sheet.append(["Advance/Surplus", str(total_final_amount - total_total_amount)])
+    sheet.append(["Total Hold Amount", str(total_hold_amount)])
+    sheet.append(["Amount With TDS", str(total_tds_amount)])
+    #new added code end here for summary chart
+
     # Make the totals row bold
     for cell in sheet[sheet.max_row]:
         cell.font = Font(bold=True)
@@ -4743,7 +4768,23 @@ def download_pmc_report(pmc_no):
 
         sheet.append([])
         sheet.append(totals_row)
+        #new code added for small chart---summary
+        for data in hold_amounts:
+            total_hold_amount = total_hold_amount + data.get('hold_amount', Decimal('0.00'))
+        print("Total Hold Amount after adding the hold amount ", total_hold_amount)
 
+        # Add payment information
+        # Get today's date
+        today_date = datetime.today().strftime('%A,%Y-%m-%d')
+        # Add headers (optional)
+        sheet.append(["Contractor Name", contractor_info["Contractor_Name"]])
+        sheet.append(["Date", today_date])
+        sheet.append(["Description", "Amount"])
+        # Add your values
+        sheet.append(["Advance/Surplus", str(total_final_amount - total_total_paid)])
+        sheet.append(["Total Hold Amount", str(total_hold_amount)])
+        sheet.append(["Amount With TDS", str(total_tds_payment_amount)])
+# new coded ended here for summary chart
         # Make totals row bold
         for cell in sheet[sheet.max_row]:
             cell.font = Font(bold=True)
