@@ -4536,8 +4536,10 @@ def download_pmc_report(pmc_no):
         for result in cursor.stored_results():
             invoices = result.fetchall()
         total_tds=Decimal('0.00')
+        final_amount=Decimal('0.00')
         for data in invoices:
             total_tds=total_tds+data.get('TDS_Amount',Decimal('0.00'))
+            final_amount=final_amount+data.get('Final_Amount',Decimal('0.00'))
         cursor.callproc('GetHoldAmountsByContractor', [contractor_info["Contractor_Id"]])
 
         for result in cursor.stored_results():
@@ -4551,7 +4553,10 @@ def download_pmc_report(pmc_no):
 
         for result in cursor.stored_results():
             all_payments = result.fetchall()
-
+        total_amount=Decimal('0.00')
+        for d in all_payments:
+            total_amount=total_amount+ d.get('Total_Amount',Decimal('0.00'))
+        total_amount_paid= final_amount- total_amount;
         payments_map = {}
         extra_payments = []
         for pay in all_payments:
@@ -4784,7 +4789,7 @@ def download_pmc_report(pmc_no):
         sheet.append(["Date", today_date])
         sheet.append(["Description", "Amount"])
         # Add your values
-        sheet.append(["Advance/Surplus", str(total_final_amount - total_total_paid)])
+        sheet.append(["Advance/Surplus", str(total_amount_paid)])
         sheet.append(["Total Hold Amount", str(total_hold_amount)])
         sheet.append(["Amount With TDS", str(total_tds)])
 # new coded ended here for summary chart
