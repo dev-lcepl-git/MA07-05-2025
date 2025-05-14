@@ -2756,76 +2756,76 @@ def contractor_report(contractor_id):
 
     try:
         # Fetch contractor details
-        # cursor.execute("""
-        #     SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
-        #            s.Mobile_No, s.GST_Registration_Type, s.GST_No,s.PAN_No,s.Email,s.Address
-        #     FROM subcontractors s
-        #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-        #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-        #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-        #     LEFT JOIN districts d ON b.District_id = d.District_id
-        #     LEFT JOIN states st ON d.State_Id = st.State_Id
-        #     WHERE s.Contractor_Id = %s
-        # """, (contractor_id,))
-        # contInfo = cursor.fetchone()
-        cursor.callproc("GetContractorInfoByIds", (contractor_id,))
-        for con in cursor.stored_results():
-            contInfo = con.fetchone()
+        cursor.execute("""
+            SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
+                   s.Mobile_No, s.GST_Registration_Type, s.GST_No,s.PAN_No,s.Email,s.Address
+            FROM subcontractors s
+            LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+            LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+            LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+            LEFT JOIN districts d ON b.District_id = d.District_id
+            LEFT JOIN states st ON d.State_Id = st.State_Id
+            WHERE s.Contractor_Id = %s
+        """, (contractor_id,))
+        contInfo = cursor.fetchone()
+        # cursor.callproc("GetContractorInfoByIds", (contractor_id,))
+        # for con in cursor.stored_results():
+        #     contInfo = con.fetchone()
 
         # Fetch distinct hold types present in invoices for the contractor
-        # cursor.execute("""
-        #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
-        #     FROM invoice_subcontractor_hold_join h
-        #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-        #     JOIN invoice i ON h.Invoice_Id = i.Invoice_Id
-        #     WHERE h.Contractor_Id = %s
-        # """, (contractor_id,))
-        # hold_types = cursor.fetchall()
-        cursor.callproc('GetDistinctHoldTypesInInvoicesByContractor', [contractor_id])
-
-        for result in cursor.stored_results():
-            hold_types = result.fetchall()
+        cursor.execute("""
+            SELECT DISTINCT ht.hold_type_id, ht.hold_type
+            FROM invoice_subcontractor_hold_join h
+            JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+            JOIN invoice i ON h.Invoice_Id = i.Invoice_Id
+            WHERE h.Contractor_Id = %s
+        """, (contractor_id,))
+        hold_types = cursor.fetchall()
+        # cursor.callproc('GetDistinctHoldTypesInInvoicesByContractor', [contractor_id])
+        #
+        # for result in cursor.stored_results():
+        #     hold_types = result.fetchall()
 
         # # Fetch all invoices for the contractor, with optional hold information
-        # query = """
-        #     SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-        #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-        #            i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
-        #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount,
-        #            i.Final_Amount, h.hold_amount, ht.hold_type
-        #     FROM invoice i
-        #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-        #     LEFT JOIN assign_subcontractors asg ON v.Village_Id = asg.Village_Id
-        #     LEFT JOIN subcontractors s ON asg.Contractor_Id = s.Contractor_Id
-        #     LEFT JOIN invoice_subcontractor_hold_join h ON i.Invoice_Id = h.Invoice_Id AND h.Contractor_Id = s.Contractor_Id
-        #     LEFT JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-        #     WHERE s.Contractor_Id = %s
-        #     ORDER BY i.PMC_No ASC;
-        # """
-        # cursor.execute(query, (contractor_id,))
-        # invoices = cursor.fetchall()
-        cursor.callproc('GetInvoicesByContractorId', [contractor_id])
+        query = """
+            SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
+                   i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
+                   i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
+                   i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount,
+                   i.Final_Amount, h.hold_amount, ht.hold_type
+            FROM invoice i
+            LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+            LEFT JOIN assign_subcontractors asg ON v.Village_Id = asg.Village_Id
+            LEFT JOIN subcontractors s ON asg.Contractor_Id = s.Contractor_Id
+            LEFT JOIN invoice_subcontractor_hold_join h ON i.Invoice_Id = h.Invoice_Id AND h.Contractor_Id = s.Contractor_Id
+            LEFT JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+            WHERE s.Contractor_Id = %s
+            ORDER BY i.PMC_No ASC;
+        """
+        cursor.execute(query, (contractor_id,))
+        invoices = cursor.fetchall()
+        # cursor.callproc('GetInvoicesByContractorId', [contractor_id])
 
-        for result in cursor.stored_results():
-            invoices = result.fetchall()
+        # for result in cursor.stored_results():
+        #     invoices = result.fetchall()
 
-        # gst_query = """select pmc_no,invoice_no,basic_amount,final_amount from gst_release where pmc_no in
-        #                 (select distinct pmc_no from assign_subcontractors where Contractor_Id= %s ) ORDER BY pmc_no ASC """
-        # cursor.execute(gst_query, (contractor_id,))
-        # gst_rel = cursor.fetchall()
-        cursor.callproc('GetGSTReleasesByContractor', [contractor_id])
+        gst_query = """select pmc_no,invoice_no,basic_amount,final_amount from gst_release where pmc_no in
+                        (select distinct pmc_no from assign_subcontractors where Contractor_Id= %s ) ORDER BY pmc_no ASC """
+        cursor.execute(gst_query, (contractor_id,))
+        gst_rel = cursor.fetchall()
+        # cursor.callproc('GetGSTReleasesByContractor', [contractor_id])
+        #
+        # for result in cursor.stored_results():
+        #     gst_rel = result.fetchall()
 
-        for result in cursor.stored_results():
-            gst_rel = result.fetchall()
+        pay_query = """select  pmc_no,invoice_no,Payment_Amount,TDS_Payment_Amount,Total_amount,utr from payment where pmc_no in
+                        (select distinct pmc_no from assign_subcontractors where Contractor_Id=%s ) ORDER BY pmc_no ASC """
+        cursor.execute(pay_query, (contractor_id,))
+        payments = cursor.fetchall()
+        # cursor.callproc('GetPaymentsByContractor', [contractor_id])
 
-        # pay_query = """select  pmc_no,invoice_no,Payment_Amount,TDS_Payment_Amount,Total_amount,utr from payment where pmc_no in
-        #                 (select distinct pmc_no from assign_subcontractors where Contractor_Id=%s ) ORDER BY pmc_no ASC """
-        # cursor.execute(pay_query, (contractor_id,))
-        # payments = cursor.fetchall()
-        cursor.callproc('GetPaymentsByContractor', [contractor_id])
-
-        for result in cursor.stored_results():
-            payments = result.fetchall()
+        # for result in cursor.stored_results():
+        #     payments = result.fetchall()
 
         total = {
             "sum_invo_basic_amt": float(sum(row['Basic_Amount'] or 0 for row in invoices)),
@@ -4243,41 +4243,41 @@ def pmc_report(pmc_no):
 
     try:
         # Fetch PMC details and contractor information
-        # cursor.execute("""
-        #     SELECT DISTINCT a.PMC_No, a.Village_Id, v.Village_Name, b.Block_Name,
-        #            d.District_Name, s.State_Name, sc.Contractor_Id, sc.Contractor_Name,
-        #            sc.Address, sc.Mobile_No, sc.PAN_No, sc.Email, sc.Gender,
-        #            sc.GST_Registration_Type, sc.GST_No
-        #     FROM assign_subcontractors a
-        #     INNER JOIN villages v ON a.Village_Id = v.Village_Id
-        #     INNER JOIN blocks b ON v.Block_Id = b.Block_Id
-        #     INNER JOIN districts d ON b.District_id = d.District_id
-        #     INNER JOIN states s ON d.State_Id = s.State_Id
-        #     INNER JOIN subcontractors sc ON a.Contractor_Id = sc.Contractor_Id
-        #     WHERE a.pmc_no = %s
-        # """, (pmc_no,))
-        # pmc_info = cursor.fetchone()
+        cursor.execute("""
+            SELECT DISTINCT a.PMC_No, a.Village_Id, v.Village_Name, b.Block_Name,
+                   d.District_Name, s.State_Name, sc.Contractor_Id, sc.Contractor_Name,
+                   sc.Address, sc.Mobile_No, sc.PAN_No, sc.Email, sc.Gender,
+                   sc.GST_Registration_Type, sc.GST_No
+            FROM assign_subcontractors a
+            INNER JOIN villages v ON a.Village_Id = v.Village_Id
+            INNER JOIN blocks b ON v.Block_Id = b.Block_Id
+            INNER JOIN districts d ON b.District_id = d.District_id
+            INNER JOIN states s ON d.State_Id = s.State_Id
+            INNER JOIN subcontractors sc ON a.Contractor_Id = sc.Contractor_Id
+            WHERE a.pmc_no = %s
+        """, (pmc_no,))
+        pmc_info = cursor.fetchone()
 
-        cursor.callproc("GetContractorInfoByPmcNo", (pmc_no,))
-        for pmc in cursor.stored_results():
-            pmc_info = pmc.fetchone()
+        # cursor.callproc("GetContractorInfoByPmcNo", (pmc_no,))
+        # for pmc in cursor.stored_results():
+        #     pmc_info = pmc.fetchone()
 
         if not pmc_info:
             return "No PMC found with this number", 404
 
         # Fetch distinct hold types present in invoices for this PMC
-        # cursor.execute("""
-        #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
-        #     FROM invoice_subcontractor_hold_join h
-        #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-        #     JOIN invoice i ON h.Invoice_Id = i.Invoice_Id
-        #     JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
-        #     WHERE a.PMC_No = %s AND a.Contractor_Id = %s
-        # """, (pmc_no, pmc_info["Contractor_Id"]))
-        # hold_types = cursor.fetchall()
-        cursor.callproc("Get_pmc_hold_types", (pmc_no, pmc_info["Contractor_Id"]))
-        for hold in cursor.stored_results():
-            hold_types = hold.fetchall()
+        cursor.execute("""
+            SELECT DISTINCT ht.hold_type_id, ht.hold_type
+            FROM invoice_subcontractor_hold_join h
+            JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+            JOIN invoice i ON h.Invoice_Id = i.Invoice_Id
+            JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
+            WHERE a.PMC_No = %s AND a.Contractor_Id = %s
+        """, (pmc_no, pmc_info["Contractor_Id"]))
+        hold_types = cursor.fetchall()
+        # cursor.callproc("Get_pmc_hold_types", (pmc_no, pmc_info["Contractor_Id"]))
+        # for hold in cursor.stored_results():
+        #     hold_types = hold.fetchall()
 
         # Extract hold type IDs
         hold_type_ids = [ht['hold_type_id'] for ht in hold_types]
@@ -4295,91 +4295,91 @@ def pmc_report(pmc_no):
 
         if not hold_type_ids:
             # # Query without hold types
-            # query = """
-            #     SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-            #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-            #            i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
-            #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount
-            #     FROM invoice i
-            #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-            #     LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
-            #     WHERE a.PMC_No = %s AND a.Contractor_Id = %s
-            #     ORDER BY i.Invoice_Date, i.Invoice_No
-            # """
-            # cursor.execute(query, (pmc_no, pmc_info["Contractor_Id"]))
-            # invoices = cursor.fetchall()
-            cursor.callproc('GetInvoicesByPMCAndContractor', [pmc_no, pmc_info["Contractor_Id"]])
-
-            # Fetch results
-            for result in cursor.stored_results():
-                invoices = result.fetchall()
+            query = """
+                SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
+                       i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
+                       i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
+                       i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount
+                FROM invoice i
+                LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+                LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
+                WHERE a.PMC_No = %s AND a.Contractor_Id = %s
+                ORDER BY i.Invoice_Date, i.Invoice_No
+            """
+            cursor.execute(query, (pmc_no, pmc_info["Contractor_Id"]))
+            invoices = cursor.fetchall()
+            # cursor.callproc('GetInvoicesByPMCAndContractor', [pmc_no, pmc_info["Contractor_Id"]])
+            #
+            # # Fetch results
+            # for result in cursor.stored_results():
+            #     invoices = result.fetchall()
 
         else:
             # Query with hold types
-            # query = """
-            #     SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-            #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-            #            i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
-            #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount,
-            #            i.Final_Amount, h.hold_amount, ht.hold_type
-            #     FROM invoice i
-            #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-            #     LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
-            #     LEFT JOIN invoice_subcontractor_hold_join h ON i.Invoice_Id = h.Invoice_Id
-            #     LEFT JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-            #     WHERE a.PMC_No = %s AND a.Contractor_Id = %s
-            #     AND (ht.hold_type_id IS NULL OR ht.hold_type_id IN ({0}))
-            #     ORDER BY i.Invoice_Date, i.Invoice_No
-            # """.format(','.join(['%s'] * len(hold_type_ids)))
+            query = """
+                SELECT DISTINCT i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
+                       i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
+                       i.After_Debit_Amount, i.Amount, i.GST_Amount, i.TDS_Amount, i.SD_Amount,
+                       i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount,
+                       i.Final_Amount, h.hold_amount, ht.hold_type
+                FROM invoice i
+                LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+                LEFT JOIN assign_subcontractors a ON i.PMC_No = a.PMC_No
+                LEFT JOIN invoice_subcontractor_hold_join h ON i.Invoice_Id = h.Invoice_Id
+                LEFT JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+                WHERE a.PMC_No = %s AND a.Contractor_Id = %s
+                AND (ht.hold_type_id IS NULL OR ht.hold_type_id IN ({0}))
+                ORDER BY i.Invoice_Date, i.Invoice_No
+            """.format(','.join(['%s'] * len(hold_type_ids)))
 
-            # params = [pmc_no, pmc_info["Contractor_Id"]] + hold_type_ids
-            # cursor.execute(query, params)
-            # invoices = cursor.fetchall()
-            hold_type_ids_str = ','.join(map(str, hold_type_ids))
-            cursor.callproc('GetInvoiceDetails', [pmc_no, pmc_info["Contractor_Id"], hold_type_ids_str])
-
-            # Fetch the results
-            for result in cursor.stored_results():
-                invoices = result.fetchall()
-                for invoice in invoices:
-                    print(invoice)
+            params = [pmc_no, pmc_info["Contractor_Id"]] + hold_type_ids
+            cursor.execute(query, params)
+            invoices = cursor.fetchall()
+            # hold_type_ids_str = ','.join(map(str, hold_type_ids))
+            # cursor.callproc('GetInvoiceDetails', [pmc_no, pmc_info["Contractor_Id"], hold_type_ids_str])
+            #
+            # # Fetch the results
+            # for result in cursor.stored_results():
+            #     invoices = result.fetchall()
+            #     for invoice in invoices:
+            #         print(invoice)
             hold_amount_total = sum(row['hold_amount'] or 0 for row in invoices if row['hold_amount'] is not None)
 
         # Calculate invoice totals
         total_invo_final = float(sum(row['Final_Amount'] or 0 for row in invoices))
 
         # # GST Release query
-        # gst_query = """
-        #     SELECT pmc_no, invoice_no, basic_amount, final_amount
-        #     FROM gst_release
-        #     WHERE pmc_no = %s
-        #     ORDER BY invoice_no ASC
-        # """
-        # cursor.execute(gst_query, (pmc_no,))
+        gst_query = """
+            SELECT pmc_no, invoice_no, basic_amount, final_amount
+            FROM gst_release
+            WHERE pmc_no = %s
+            ORDER BY invoice_no ASC
+        """
+        cursor.execute(gst_query, (pmc_no,))
 
         # gst_rel = cursor.fetchall()
-        cursor.callproc('GetGSTReleaseByPMC', [pmc_no])
-
-        # Fetch results
-        for result in cursor.stored_results():
-            gst_rel = result.fetchall()
+        # cursor.callproc('GetGSTReleaseByPMC', [pmc_no])
+        #
+        # # Fetch results
+        # for result in cursor.stored_results():
+        #     gst_rel = result.fetchall()
 
         total_gst_basic = float(sum(row['basic_amount'] or 0 for row in gst_rel))
         total_gst_final = float(sum(row['final_amount'] or 0 for row in gst_rel))
 
         # # Payment query
-        # pay_query = """
-        #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, utr
-        #     FROM payment
-        #     WHERE pmc_no = %s
-        #     ORDER BY invoice_no ASC
-        # """
-        # cursor.execute(pay_query, (pmc_no,))
-        # payments = cursor.fetchall()
-        cursor.callproc('GetPaymentByPMC', [pmc_no])
-
-        for result in cursor.stored_results():
-            payments = result.fetchall()
+        pay_query = """
+            SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, utr
+            FROM payment
+            WHERE pmc_no = %s
+            ORDER BY invoice_no ASC
+        """
+        cursor.execute(pay_query, (pmc_no,))
+        payments = cursor.fetchall()
+        # cursor.callproc('GetPaymentByPMC', [pmc_no])
+        #
+        # for result in cursor.stored_results():
+        #     payments = result.fetchall()
 
         total_pay_amount = float(sum(row['Payment_Amount'] or 0 for row in payments))
         total_pay_total = float(sum(row['Total_amount'] or 0 for row in payments))
