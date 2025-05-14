@@ -2612,31 +2612,31 @@ def search_contractor():
     if not conditions:
         return jsonify({"error": "At least one field is required for search."}), 400
 
-    # query = f""" SELECT DISTINCT s.Contractor_Id, s.Contractor_Name, i.PMC_No, st.State_Name,
-    #     d.District_Name, b.Block_Name, v.Village_Name
-    #     FROM subcontractors s
-    #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-    #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-    #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-    #     LEFT JOIN districts d ON b.District_id = d.District_id
-    #     LEFT JOIN states st ON d.State_Id = st.State_Id
-    #     LEFT JOIN invoice i ON v.Village_Id = i.Village_Id
-    #     WHERE {' AND '.join(conditions)}
-    # """
+    query = f""" SELECT DISTINCT s.Contractor_Id, s.Contractor_Name, i.PMC_No, st.State_Name,
+        d.District_Name, b.Block_Name, v.Village_Name
+        FROM subcontractors s
+        LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+        LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+        LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+        LEFT JOIN districts d ON b.District_id = d.District_id
+        LEFT JOIN states st ON d.State_Id = st.State_Id
+        LEFT JOIN invoice i ON v.Village_Id = i.Village_Id
+        WHERE {' AND '.join(conditions)}
+    """
 
-    # cursor.execute(query, tuple(params))
-    # data = cursor.fetchall()
+    cursor.execute(query, tuple(params))
+    data = cursor.fetchall()
     # cursor.callproc('SearchSubcontractors', [
     # file_info['Subcontractor'], pmc_no, state, district, block, village, year_from, year_to
     #  ])
 
     # for result in cursor.stored_results():
     #     data = result.fetchall()
-    cursor.callproc("search_contractor_info",
-                    [subcontractor_name or '', pmc_no or '', state or '', district or '', block or '',
-                     village or '', year_from or None, year_to or None])
-    for result in cursor.stored_results():
-        data = result.fetchall()
+    # cursor.callproc("search_contractor_info",
+    #                 [subcontractor_name or '', pmc_no or '', state or '', district or '', block or '',
+    #                  village or '', year_from or None, year_to or None])
+    # for result in cursor.stored_results():
+    #     data = result.fetchall()
 
     return jsonify(data)
 
