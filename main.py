@@ -3578,6 +3578,416 @@ import config
 
 #     return send_from_directory(output_folder, f"Contractor_Report_{contractor_id}.xlsx", as_attachment=True)
 
+# @app.route('/download_report/<int:contractor_id>')
+# def download_report(contractor_id):
+#     connection = config.get_db_connection()
+#     cursor = connection.cursor(dictionary=True)
+#
+#     output_folder = "static/download"
+#     output_file = os.path.join(output_folder, f"Contractor_Report_{contractor_id}.xlsx")
+#
+#     if not os.path.exists(output_folder):
+#         os.makedirs(output_folder)
+#
+#     try:
+#         # Fetch Contractor Details
+#         # cursor.execute("""
+#         #     SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
+#         #                     s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
+#         #     FROM subcontractors s
+#         #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
+#         #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
+#         #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
+#         #     LEFT JOIN districts d ON b.District_id = d.District_id
+#         #     LEFT JOIN states st ON d.State_Id = st.State_Id
+#         #     WHERE s.Contractor_Id = %s
+#         # """, (contractor_id,))
+#         # contInfo = cursor.fetchone()
+#         cursor.callproc('GetContractorInfoId', [contractor_id])
+#         for result in cursor.stored_results():
+#             contInfo = result.fetchone()
+#
+#         if not contInfo:
+#             return "No contractor found", 404
+#
+#         # # Fetch distinct hold types present for the contractor
+#         # cursor.execute("""
+#         #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
+#         #     FROM invoice_subcontractor_hold_join h
+#         #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+#         #     WHERE h.Contractor_Id = %s
+#         # """, (contractor_id,))
+#         # hold_types = cursor.fetchall()
+#         cursor.callproc('GetDistinctHoldTypesByContractor', [contractor_id])
+#
+#         for result in cursor.stored_results():
+#             hold_types = result.fetchall()
+#
+#         hold_type_map = {ht['hold_type_id']: ht['hold_type'] for ht in hold_types}
+#
+#         # # Fetch Invoices & GST Releases
+#         # cursor.execute("""
+#         #     SELECT DISTINCT i.Invoice_Id, i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
+#         #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
+#         #            i.After_Debit_Amount, i.GST_Amount, i.Amount, i.TDS_Amount, i.SD_Amount,
+#         #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount,
+#         #            g.pmc_no AS gst_pmc_no, g.invoice_no AS gst_invoice_no,
+#         #            g.basic_amount AS gst_basic_amount, g.final_amount AS gst_final_amount
+#         #     FROM invoice i
+#         #     LEFT JOIN assign_subcontractors asg ON i.PMC_No = asg.PMC_No
+#         #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
+#         #     LEFT JOIN gst_release g ON i.PMC_No = g.pmc_no AND i.Invoice_No = g.invoice_no
+#         #     WHERE asg.Contractor_Id = %s
+#         # """, (contractor_id,))
+#         # invoices = cursor.fetchall()
+#         cursor.callproc('GetInvoicesAndGSTReleasesByContractor', [contractor_id])
+#
+#         for result in cursor.stored_results():
+#             invoices = result.fetchall()
+#
+#         # # Fetch Hold Amounts separately
+#         # cursor.execute("""
+#         #     SELECT h.Invoice_Id, ht.hold_type_id, h.hold_amount
+#         #     FROM invoice_subcontractor_hold_join h
+#         #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
+#         #     WHERE h.Contractor_Id = %s
+#         # """, (contractor_id,))
+#         # hold_amounts = cursor.fetchall()
+#         cursor.callproc('GetHoldAmountsByContractors', [contractor_id])
+#
+#         for result in cursor.stored_results():
+#             hold_amounts = result.fetchall()
+#
+#         # Create a mapping of invoice_id to hold amounts by type
+#         hold_data = {}
+#         for h in hold_amounts:
+#             hold_data.setdefault(h['Invoice_Id'], {})[h['hold_type_id']] = h['hold_amount']
+#
+#         # Extract unique PMC numbers for payments
+#         pmc_numbers = tuple(set(inv['PMC_No'] for inv in invoices if inv['PMC_No'] is not None))
+#
+#         # Fetch all Payments for the PMC numbers (including those with null invoice_no)
+#         payments_map = {}
+#         extra_payments_map = {}  # Now using a map to organize extra payments by PMC
+#         if pmc_numbers:
+#             # # First get payments with invoice_no
+#             # query = f"""
+#             #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
+#             #     FROM payment
+#             #     WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
+#             #     AND invoice_no IS NOT NULL
+#             #     ORDER BY pmc_no, invoice_no
+#             # """
+#             # cursor.execute(query, pmc_numbers)
+#             # payments = cursor.fetchall()
+#
+#             pmc_list_str = ','.join(str(pmc) for pmc in pmc_numbers)
+#             # e.g. 'PMC001,PMC002,PMC003'
+#             cursor.callproc('GetPaymentsByPmcNosWithInvoice', [pmc_list_str])
+#
+#             for result in cursor.stored_results():
+#                 payments = result.fetchall()
+#
+#             print("payments by procedure:", payments)
+#             # Organize payments by PMC No & Invoice No
+#             for pay in payments:
+#                 key = (pay['pmc_no'], pay['invoice_no'])
+#                 if key not in payments_map:
+#                     payments_map[key] = []
+#                 payments_map[key].append(pay)
+#
+#             # Then get extra payments (null invoice_no) and organize by PMC
+#             # query = f"""
+#             #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
+#             #     FROM payment
+#             #     WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
+#             #     AND invoice_no IS NULL
+#             #     ORDER BY pmc_no
+#             # """
+#             # cursor.execute(query, pmc_numbers)
+#             # extra_payments = cursor.fetchall()
+#             pmc_list_str = ','.join(str(pmc) for pmc in pmc_numbers)
+#             cursor.callproc('GetExtraPaymentsByPmcNos', [pmc_list_str])
+#
+#             for result in cursor.stored_results():
+#                 extra_payments = result.fetchall()
+#             print(
+#                 "-----------------------------------------------------------------------------------------Extra Payment---------------------------------------------------------------")
+#             print("Extra payment from produre", extra_payments)
+#
+#             for pay in extra_payments:
+#                 if pay['pmc_no'] not in extra_payments_map:
+#                     extra_payments_map[pay['pmc_no']] = []
+#                 extra_payments_map[pay['pmc_no']].append(pay)
+#             print(
+#                 "-----------------------------------------------------------------------------------------Extra Payment MAP --------------------------------------------------------------")
+#             print("Extra payment MAp from produre", extra_payments_map)
+#         # Create Excel workbook
+#         workbook = openpyxl.Workbook()
+#         sheet = workbook.active
+#         sheet.title = "Contractor Report"
+#
+#         # Write Contractor Details
+#         sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
+#         sheet.append(["State", contInfo["State_Name"]])
+#         sheet.append(["District", contInfo["District_Name"]])
+#         sheet.append(["Block", contInfo["Block_Name"]])
+#         sheet.append(["Mobile No", contInfo["Mobile_No"]])
+#         sheet.append(["GST Type", contInfo["GST_Registration_Type"]])
+#         sheet.append(["GST No", contInfo["GST_No"]])
+#         sheet.append(["PAN No", contInfo["PAN_No"]])
+#         sheet.append(["Email", contInfo["Email"]])
+#         sheet.append(["Address", contInfo["Address"]])
+#         sheet.append([])
+#
+#         # Table Headers - include all hold types as separate columns
+#         base_headers = ["PMC No", "Village", "Work Type", "Invoice Details", "Invoice Date", "Invoice No",
+#                         "Basic Amount", "Debit", "After Debit Amount", "GST (18%)", "Amount", "TDS (1%)",
+#                         "SD (5%)", "On Commission", "Hydro Testing", "GST SD Amount"]
+#
+#         hold_headers = [ht['hold_type'] for ht in hold_types]
+#
+#         payment_headers = ["Final Amount", "Payment Amount", "TDS Payment", "Total Paid", "UTR"]
+#
+#         sheet.append(base_headers + hold_headers + payment_headers)
+#
+#         seen_invoices = set()
+#         seen_gst_notes = set()
+#         processed_payments = set()  # Track which payments we've processed
+#
+#         # Process invoices grouped by PMC No
+#         pmc_groups = {}
+#         for inv in invoices:
+#             pmc_no = inv["PMC_No"]
+#             if pmc_no not in pmc_groups:
+#                 pmc_groups[pmc_no] = []
+#             pmc_groups[pmc_no].append(inv)
+#
+#         # Process each PMC group separately
+#         for pmc_no, pmc_invoices in pmc_groups.items():
+#             # Process all invoices for this PMC first
+#             for inv in pmc_invoices:
+#                 invoice_no = inv["Invoice_No"]
+#                 payments = payments_map.get((pmc_no, invoice_no), [])
+#
+#                 # Process invoice row with first payment (if exists)
+#                 if (pmc_no, invoice_no) not in seen_invoices:
+#                     seen_invoices.add((pmc_no, invoice_no))
+#                     first_payment = payments[0] if len(payments) > 0 else None
+#
+#                     # Base invoice data
+#                     row = [
+#                         pmc_no, inv["Village_Name"], inv["Work_Type"], inv["Invoice_Details"],
+#                         inv["Invoice_Date"], invoice_no, inv["Basic_Amount"], inv["Debit_Amount"],
+#                         inv["After_Debit_Amount"], inv["GST_Amount"], inv["Amount"], inv["TDS_Amount"],
+#                         inv["SD_Amount"], inv["On_Commission"], inv["Hydro_Testing"], inv["GST_SD_Amount"]
+#                     ]
+#
+#                     # Add hold amounts for each hold type
+#                     invoice_holds = hold_data.get(inv["Invoice_Id"], {})
+#                     for ht_id in hold_type_map.keys():
+#                         row.append(invoice_holds.get(ht_id, ""))
+#
+#                     # Add payment information
+#                     row += [
+#                         inv["Final_Amount"],
+#                         first_payment["Payment_Amount"] if first_payment else "",
+#                         first_payment["TDS_Payment_Amount"] if first_payment else "",
+#                         first_payment["Total_amount"] if first_payment else "",
+#                         first_payment["UTR"] if first_payment else ""
+#                     ]
+#
+#                     sheet.append(row)
+#
+#                     if first_payment:
+#                         payment_id = f"{pmc_no}-{invoice_no}-{first_payment['Payment_Amount']}-{first_payment.get('UTR', '')}"
+#                         processed_payments.add(payment_id)
+#
+#                 # Process GST release if exists (only if we have a matching GST record)
+#                 if inv["gst_pmc_no"] and (inv["gst_pmc_no"], inv["gst_invoice_no"]) not in seen_gst_notes:
+#                     seen_gst_notes.add((inv["gst_pmc_no"], inv["gst_invoice_no"]))
+#
+#                     # Find the payment that matches this GST release
+#                     gst_payment = None
+#                     for payment in payments[1:]:  # Skip first payment (already used for invoice)
+#                         if payment['invoice_no'] == inv["gst_invoice_no"]:
+#                             gst_payment = payment
+#                             break
+#
+#                     # GST release row
+#                     row = [
+#                         pmc_no, "", "", "GST Release Note", "", inv["gst_invoice_no"],
+#                         inv["gst_basic_amount"], "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
+#                     ]
+#
+#                     # Empty holds for GST release
+#                     row += ["" for _ in hold_headers]
+#
+#                     # Add payment information
+#                     row += [
+#                         inv["gst_final_amount"],
+#                         gst_payment["Payment_Amount"] if gst_payment else "",
+#                         gst_payment["TDS_Payment_Amount"] if gst_payment else "",
+#                         gst_payment["Total_amount"] if gst_payment else "",
+#                         gst_payment["UTR"] if gst_payment else ""
+#                     ]
+#
+#                     sheet.append(row)
+#
+#                     if gst_payment:
+#                         payment_id = f"{pmc_no}-{inv['gst_invoice_no']}-{gst_payment['Payment_Amount']}-{gst_payment.get('UTR', '')}"
+#                         processed_payments.add(payment_id)
+#
+#                 # Process remaining payments as extra payments
+#                 for payment in payments[1:]:
+#                     payment_id = f"{pmc_no}-{payment['invoice_no']}-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
+#                     if payment_id not in processed_payments:
+#                         row = [
+#                             pmc_no, "", "", "", "", payment['invoice_no'],
+#                             "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
+#                         ]
+#
+#                         # Empty holds for extra payments
+#                         row += ["" for _ in hold_headers]
+#
+#                         # Add payment information
+#                         row += [
+#                             "",
+#                             payment["Payment_Amount"],
+#                             payment["TDS_Payment_Amount"],
+#                             payment["Total_amount"],
+#                             payment["UTR"]
+#                         ]
+#
+#                         sheet.append(row)
+#                         processed_payments.add(payment_id)
+#
+#             # Process extra payments for this PMC (null invoice_no) immediately after the PMC's invoices
+#             if pmc_no in extra_payments_map:
+#                 for payment in extra_payments_map[pmc_no]:
+#                     payment_id = f"{pmc_no}-null-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
+#                     if payment_id not in processed_payments:
+#                         row = [
+#                             pmc_no, "", "", "", "", "",
+#                             "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
+#                         ]
+#
+#                         # Empty holds for null invoice payments
+#                         row += ["" for _ in hold_headers]
+#
+#                         # Add payment information
+#                         row += [
+#                             "",
+#                             payment["Payment_Amount"],
+#                             payment["TDS_Payment_Amount"],
+#                             payment["Total_amount"],
+#                             payment["UTR"]
+#                         ]
+#
+#                         sheet.append(row)
+#                         processed_payments.add(payment_id)
+#
+#         workbook.save(output_file)
+#         workbook.close()
+#     finally:
+#         cursor.close()
+#         connection.close()
+#     from openpyxl.styles import Font
+#
+#     # Initialize totals
+#     total_basic_amount = 0
+#     total_tds_amount = 0
+#     total_sd_amount = 0
+#     total_on_commission = 0
+#     total_hold_amount = 0
+#     total_final_amount = 0
+#     total_total_amount = 0  # Sum of all Total Amounts from payment data
+#
+#     # Iterate through rows to calculate totals
+#     for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
+#         try:
+#             total_basic_amount += float(row[6] or 0)  # Basic_Amount
+#             total_tds_amount += float(row[11] or 0)  # TDS_Amount
+#             total_sd_amount += float(row[12] or 0)  # SD_Amount
+#             total_on_commission += float(row[13] or 0)  # On_Commission
+#             total_final_amount += float(row[-5] or 0)  # Final_Amount
+#             total_total_amount += float(row[-2] or 0)  # Total_Amount (from payments)
+#
+#             # Sum of hold amounts (dynamically calculated based on hold_headers)
+#             hold_start_col = len(base_headers)  # First column where hold types start
+#             hold_end_col = hold_start_col + len(hold_headers)  # Last column where hold types end
+#             total_hold_amount += sum(float(row[i] or 0) for i in range(hold_start_col, hold_end_col))
+#
+#         except ValueError:
+#             continue  # Skip if non-numeric values cause errors
+#
+#     # Append the totals row at the bottom of the sheet
+#     totals_row = [
+#         "TOTAL", "", "", "", "", "",  # Empty values for non-numeric columns
+#         total_basic_amount, "", "", "", "", total_tds_amount, total_sd_amount,
+#         total_on_commission, "", "",  # Empty GST SD Amount
+#     ]
+#     if hold_headers:
+#         totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
+#
+#     # Add empty placeholders for hold types
+#     # totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
+#
+#     # Add totals for Final Amount and Total Amount
+#     totals_row += [
+#         total_final_amount, "", "", total_total_amount, ""  # UTR column remains empty
+#     ]
+#
+#     # Append totals row to sheet
+#     sheet.append([])
+#     sheet.append(totals_row)
+#     total_hold_amount=Decimal('0.00')
+#     for d in invoices:
+#         total_hold_amount = total_hold_amount + d.get('SD_Amount', Decimal('0.00')) + d.get('On_Commission',
+#                                                                                                   Decimal(
+#                                                                                                       '0.00')) + d.get(
+#             'Hydro_Testing', Decimal('0.00'))
+#     #new coded for summary chart added
+#     for data in hold_amounts:
+#         total_hold_amount = total_hold_amount + data.get('hold_amount', Decimal('0.00'))
+#     print("Total Hold Amount after adding the hold amount ", total_hold_amount)
+#
+#
+#     from datetime import datetime
+#
+#     # Add payment information
+#
+#     # Get today's date with weekday
+#     today_date = datetime.today().strftime('%A, %Y-%m-%d')
+#
+#     # Add headers (optional)
+#     sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
+#     sheet.append(["Date", today_date])
+#     sheet.append(["Description", "Amount"])
+#
+#     # Add your values
+#     sheet.append(["Advance/Surplus", str( total_final_amount - total_total_amount)])
+#     sheet.append(["Total Hold Amount", str(total_hold_amount)])
+#     sheet.append(["Amount With TDS", str(total_tds_amount)])
+#     #new added code end here for summary chart
+#
+#     # Make the totals row bold
+#     for cell in sheet[sheet.max_row]:
+#         cell.font = Font(bold=True)
+#
+#     # Save workbook after modifications
+#     workbook.save(output_file)
+#     workbook.close()
+#
+#     return send_from_directory(output_folder, f"Contractor_Report_{contractor_id}.xlsx", as_attachment=True)
+
+from flask import send_from_directory
+import os
+import openpyxl
+from openpyxl.styles import Font, PatternFill
+from decimal import Decimal
+from datetime import datetime
+
 @app.route('/download_report/<int:contractor_id>')
 def download_report(contractor_id):
     connection = config.get_db_connection()
@@ -3590,144 +4000,58 @@ def download_report(contractor_id):
         os.makedirs(output_folder)
 
     try:
-        # Fetch Contractor Details
-        # cursor.execute("""
-        #     SELECT DISTINCT s.Contractor_Name, st.State_Name, d.District_Name, b.Block_Name,
-        #                     s.Mobile_No, s.GST_Registration_Type, s.GST_No, s.PAN_No, s.Email, s.Address
-        #     FROM subcontractors s
-        #     LEFT JOIN assign_subcontractors asg ON s.Contractor_Id = asg.Contractor_Id
-        #     LEFT JOIN villages v ON asg.Village_Id = v.Village_Id
-        #     LEFT JOIN blocks b ON v.Block_Id = b.Block_Id
-        #     LEFT JOIN districts d ON b.District_id = d.District_id
-        #     LEFT JOIN states st ON d.State_Id = st.State_Id
-        #     WHERE s.Contractor_Id = %s
-        # """, (contractor_id,))
-        # contInfo = cursor.fetchone()
+        # Fetch Contractor Info
         cursor.callproc('GetContractorInfoId', [contractor_id])
         for result in cursor.stored_results():
             contInfo = result.fetchone()
-
         if not contInfo:
             return "No contractor found", 404
 
-        # # Fetch distinct hold types present for the contractor
-        # cursor.execute("""
-        #     SELECT DISTINCT ht.hold_type_id, ht.hold_type
-        #     FROM invoice_subcontractor_hold_join h
-        #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-        #     WHERE h.Contractor_Id = %s
-        # """, (contractor_id,))
-        # hold_types = cursor.fetchall()
+        # Fetch Hold Types
         cursor.callproc('GetDistinctHoldTypesByContractor', [contractor_id])
-
         for result in cursor.stored_results():
             hold_types = result.fetchall()
-
         hold_type_map = {ht['hold_type_id']: ht['hold_type'] for ht in hold_types}
 
-        # # Fetch Invoices & GST Releases
-        # cursor.execute("""
-        #     SELECT DISTINCT i.Invoice_Id, i.PMC_No, v.Village_Name, i.Work_Type, i.Invoice_Details,
-        #            i.Invoice_Date, i.Invoice_No, i.Basic_Amount, i.Debit_Amount,
-        #            i.After_Debit_Amount, i.GST_Amount, i.Amount, i.TDS_Amount, i.SD_Amount,
-        #            i.On_Commission, i.Hydro_Testing, i.GST_SD_Amount, i.Final_Amount,
-        #            g.pmc_no AS gst_pmc_no, g.invoice_no AS gst_invoice_no,
-        #            g.basic_amount AS gst_basic_amount, g.final_amount AS gst_final_amount
-        #     FROM invoice i
-        #     LEFT JOIN assign_subcontractors asg ON i.PMC_No = asg.PMC_No
-        #     LEFT JOIN villages v ON i.Village_Id = v.Village_Id
-        #     LEFT JOIN gst_release g ON i.PMC_No = g.pmc_no AND i.Invoice_No = g.invoice_no
-        #     WHERE asg.Contractor_Id = %s
-        # """, (contractor_id,))
-        # invoices = cursor.fetchall()
+        # Fetch Invoices
         cursor.callproc('GetInvoicesAndGSTReleasesByContractor', [contractor_id])
-
         for result in cursor.stored_results():
             invoices = result.fetchall()
 
-        # # Fetch Hold Amounts separately
-        # cursor.execute("""
-        #     SELECT h.Invoice_Id, ht.hold_type_id, h.hold_amount
-        #     FROM invoice_subcontractor_hold_join h
-        #     JOIN hold_types ht ON h.hold_type_id = ht.hold_type_id
-        #     WHERE h.Contractor_Id = %s
-        # """, (contractor_id,))
-        # hold_amounts = cursor.fetchall()
+        # Fetch Hold Amounts
         cursor.callproc('GetHoldAmountsByContractors', [contractor_id])
-
         for result in cursor.stored_results():
             hold_amounts = result.fetchall()
-
-        # Create a mapping of invoice_id to hold amounts by type
         hold_data = {}
         for h in hold_amounts:
             hold_data.setdefault(h['Invoice_Id'], {})[h['hold_type_id']] = h['hold_amount']
 
-        # Extract unique PMC numbers for payments
+        # Extract PMC numbers
         pmc_numbers = tuple(set(inv['PMC_No'] for inv in invoices if inv['PMC_No'] is not None))
 
-        # Fetch all Payments for the PMC numbers (including those with null invoice_no)
         payments_map = {}
-        extra_payments_map = {}  # Now using a map to organize extra payments by PMC
+        extra_payments_map = {}
         if pmc_numbers:
-            # # First get payments with invoice_no
-            # query = f"""
-            #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-            #     FROM payment
-            #     WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
-            #     AND invoice_no IS NOT NULL
-            #     ORDER BY pmc_no, invoice_no
-            # """
-            # cursor.execute(query, pmc_numbers)
-            # payments = cursor.fetchall()
-
             pmc_list_str = ','.join(str(pmc) for pmc in pmc_numbers)
-            # e.g. 'PMC001,PMC002,PMC003'
             cursor.callproc('GetPaymentsByPmcNosWithInvoice', [pmc_list_str])
-
             for result in cursor.stored_results():
                 payments = result.fetchall()
-
-            print("payments by procedure:", payments)
-            # Organize payments by PMC No & Invoice No
             for pay in payments:
                 key = (pay['pmc_no'], pay['invoice_no'])
-                if key not in payments_map:
-                    payments_map[key] = []
-                payments_map[key].append(pay)
+                payments_map.setdefault(key, []).append(pay)
 
-            # Then get extra payments (null invoice_no) and organize by PMC
-            # query = f"""
-            #     SELECT pmc_no, invoice_no, Payment_Amount, TDS_Payment_Amount, Total_amount, UTR
-            #     FROM payment
-            #     WHERE pmc_no IN ({','.join(['%s'] * len(pmc_numbers))})
-            #     AND invoice_no IS NULL
-            #     ORDER BY pmc_no
-            # """
-            # cursor.execute(query, pmc_numbers)
-            # extra_payments = cursor.fetchall()
-            pmc_list_str = ','.join(str(pmc) for pmc in pmc_numbers)
             cursor.callproc('GetExtraPaymentsByPmcNos', [pmc_list_str])
-
             for result in cursor.stored_results():
                 extra_payments = result.fetchall()
-            print(
-                "-----------------------------------------------------------------------------------------Extra Payment---------------------------------------------------------------")
-            print("Extra payment from produre", extra_payments)
-
             for pay in extra_payments:
-                if pay['pmc_no'] not in extra_payments_map:
-                    extra_payments_map[pay['pmc_no']] = []
-                extra_payments_map[pay['pmc_no']].append(pay)
-            print(
-                "-----------------------------------------------------------------------------------------Extra Payment MAP --------------------------------------------------------------")
-            print("Extra payment MAp from produre", extra_payments_map)
-        # Create Excel workbook
+                extra_payments_map.setdefault(pay['pmc_no'], []).append(pay)
+
+        # Create Excel Workbook
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Contractor Report"
 
-        # Write Contractor Details
+        # Write Contractor Info
         sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
         sheet.append(["State", contInfo["State_Name"]])
         sheet.append(["District", contInfo["District_Name"]])
@@ -3740,55 +4064,48 @@ def download_report(contractor_id):
         sheet.append(["Address", contInfo["Address"]])
         sheet.append([])
 
-        # Table Headers - include all hold types as separate columns
+        # Table Headers
         base_headers = ["PMC No", "Village", "Work Type", "Invoice Details", "Invoice Date", "Invoice No",
                         "Basic Amount", "Debit", "After Debit Amount", "GST (18%)", "Amount", "TDS (1%)",
                         "SD (5%)", "On Commission", "Hydro Testing", "GST SD Amount"]
-
         hold_headers = [ht['hold_type'] for ht in hold_types]
-
         payment_headers = ["Final Amount", "Payment Amount", "TDS Payment", "Total Paid", "UTR"]
+        all_headers = base_headers + hold_headers + payment_headers
 
-        sheet.append(base_headers + hold_headers + payment_headers)
+        sheet.append(all_headers)
+
+        # Style the headers
+        header_fill = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+        header_font = Font(bold=True)
+        for cell in sheet[sheet.max_row]:
+            cell.font = header_font
+            cell.fill = header_fill
 
         seen_invoices = set()
         seen_gst_notes = set()
-        processed_payments = set()  # Track which payments we've processed
-
-        # Process invoices grouped by PMC No
+        processed_payments = set()
         pmc_groups = {}
         for inv in invoices:
-            pmc_no = inv["PMC_No"]
-            if pmc_no not in pmc_groups:
-                pmc_groups[pmc_no] = []
-            pmc_groups[pmc_no].append(inv)
+            pmc_groups.setdefault(inv["PMC_No"], []).append(inv)
 
-        # Process each PMC group separately
         for pmc_no, pmc_invoices in pmc_groups.items():
-            # Process all invoices for this PMC first
             for inv in pmc_invoices:
                 invoice_no = inv["Invoice_No"]
                 payments = payments_map.get((pmc_no, invoice_no), [])
 
-                # Process invoice row with first payment (if exists)
                 if (pmc_no, invoice_no) not in seen_invoices:
                     seen_invoices.add((pmc_no, invoice_no))
-                    first_payment = payments[0] if len(payments) > 0 else None
-
-                    # Base invoice data
+                    first_payment = payments[0] if payments else None
                     row = [
                         pmc_no, inv["Village_Name"], inv["Work_Type"], inv["Invoice_Details"],
                         inv["Invoice_Date"], invoice_no, inv["Basic_Amount"], inv["Debit_Amount"],
                         inv["After_Debit_Amount"], inv["GST_Amount"], inv["Amount"], inv["TDS_Amount"],
                         inv["SD_Amount"], inv["On_Commission"], inv["Hydro_Testing"], inv["GST_SD_Amount"]
                     ]
-
-                    # Add hold amounts for each hold type
                     invoice_holds = hold_data.get(inv["Invoice_Id"], {})
-                    for ht_id in hold_type_map.keys():
+                    for ht_id in hold_type_map:
                         row.append(invoice_holds.get(ht_id, ""))
 
-                    # Add payment information
                     row += [
                         inv["Final_Amount"],
                         first_payment["Payment_Amount"] if first_payment else "",
@@ -3796,34 +4113,22 @@ def download_report(contractor_id):
                         first_payment["Total_amount"] if first_payment else "",
                         first_payment["UTR"] if first_payment else ""
                     ]
-
                     sheet.append(row)
-
                     if first_payment:
                         payment_id = f"{pmc_no}-{invoice_no}-{first_payment['Payment_Amount']}-{first_payment.get('UTR', '')}"
                         processed_payments.add(payment_id)
 
-                # Process GST release if exists (only if we have a matching GST record)
+                # GST Notes
                 if inv["gst_pmc_no"] and (inv["gst_pmc_no"], inv["gst_invoice_no"]) not in seen_gst_notes:
                     seen_gst_notes.add((inv["gst_pmc_no"], inv["gst_invoice_no"]))
-
-                    # Find the payment that matches this GST release
                     gst_payment = None
-                    for payment in payments[1:]:  # Skip first payment (already used for invoice)
+                    for payment in payments[1:]:
                         if payment['invoice_no'] == inv["gst_invoice_no"]:
                             gst_payment = payment
                             break
-
-                    # GST release row
-                    row = [
-                        pmc_no, "", "", "GST Release Note", "", inv["gst_invoice_no"],
-                        inv["gst_basic_amount"], "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-                    ]
-
-                    # Empty holds for GST release
+                    row = [pmc_no, "", "", "GST Release Note", "", inv["gst_invoice_no"],
+                           inv["gst_basic_amount"], "", "", "", "", "", "", "", "", ""]
                     row += ["" for _ in hold_headers]
-
-                    # Add payment information
                     row += [
                         inv["gst_final_amount"],
                         gst_payment["Payment_Amount"] if gst_payment else "",
@@ -3831,26 +4136,16 @@ def download_report(contractor_id):
                         gst_payment["Total_amount"] if gst_payment else "",
                         gst_payment["UTR"] if gst_payment else ""
                     ]
-
                     sheet.append(row)
-
                     if gst_payment:
                         payment_id = f"{pmc_no}-{inv['gst_invoice_no']}-{gst_payment['Payment_Amount']}-{gst_payment.get('UTR', '')}"
                         processed_payments.add(payment_id)
 
-                # Process remaining payments as extra payments
                 for payment in payments[1:]:
                     payment_id = f"{pmc_no}-{payment['invoice_no']}-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
                     if payment_id not in processed_payments:
-                        row = [
-                            pmc_no, "", "", "", "", payment['invoice_no'],
-                            "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-                        ]
-
-                        # Empty holds for extra payments
+                        row = [pmc_no, "", "", "", "", payment['invoice_no'], "", "", "", "", "", "", "", "", "", ""]
                         row += ["" for _ in hold_headers]
-
-                        # Add payment information
                         row += [
                             "",
                             payment["Payment_Amount"],
@@ -3858,126 +4153,84 @@ def download_report(contractor_id):
                             payment["Total_amount"],
                             payment["UTR"]
                         ]
-
                         sheet.append(row)
                         processed_payments.add(payment_id)
 
-            # Process extra payments for this PMC (null invoice_no) immediately after the PMC's invoices
-            if pmc_no in extra_payments_map:
-                for payment in extra_payments_map[pmc_no]:
-                    payment_id = f"{pmc_no}-null-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
-                    if payment_id not in processed_payments:
-                        row = [
-                            pmc_no, "", "", "", "", "",
-                            "", "", "", "", "", "", "", "", "", ""  # Empty GST SD Amount
-                        ]
+            # Extra payments (null invoice)
+            for payment in extra_payments_map.get(pmc_no, []):
+                payment_id = f"{pmc_no}-null-{payment['Payment_Amount']}-{payment.get('UTR', '')}"
+                if payment_id not in processed_payments:
+                    row = [pmc_no, "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+                    row += ["" for _ in hold_headers]
+                    row += [
+                        "",
+                        payment["Payment_Amount"],
+                        payment["TDS_Payment_Amount"],
+                        payment["Total_amount"],
+                        payment["UTR"]
+                    ]
+                    sheet.append(row)
+                    processed_payments.add(payment_id)
 
-                        # Empty holds for null invoice payments
-                        row += ["" for _ in hold_headers]
+        # Totals Calculation
+        total_basic_amount = total_tds_amount = total_sd_amount = total_on_commission = 0
+        total_hold_amount = total_final_amount = total_total_amount = 0
 
-                        # Add payment information
-                        row += [
-                            "",
-                            payment["Payment_Amount"],
-                            payment["TDS_Payment_Amount"],
-                            payment["Total_amount"],
-                            payment["UTR"]
-                        ]
+        for row in sheet.iter_rows(min_row=13, max_row=sheet.max_row, values_only=True):
+            try:
+                total_basic_amount += float(row[6] or 0)
+                total_tds_amount += float(row[11] or 0)
+                total_sd_amount += float(row[12] or 0)
+                total_on_commission += float(row[13] or 0)
+                total_final_amount += float(row[-5] or 0)
+                total_total_amount += float(row[-2] or 0)
+                hold_start_col = len(base_headers)
+                hold_end_col = hold_start_col + len(hold_headers)
+                total_hold_amount += sum(float(row[i] or 0) for i in range(hold_start_col, hold_end_col))
+            except ValueError:
+                continue
 
-                        sheet.append(row)
-                        processed_payments.add(payment_id)
+        # Totals Row
+        sheet.append([])
+        totals_row = [
+            "TOTAL", "", "", "", "", "", total_basic_amount, "", "", "", "", total_tds_amount,
+            total_sd_amount, total_on_commission, "", ""
+        ]
+        totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
+        totals_row += [total_final_amount, "", "", total_total_amount, ""]
+        sheet.append(totals_row)
+
+        for cell in sheet[sheet.max_row]:
+            cell.font = Font(bold=True)
+
+        # Summary Section
+        today_date = datetime.today().strftime('%A, %Y-%m-%d')
+        sheet.append([])
+        sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
+        sheet.append(["Date", today_date])
+        sheet.append(["Description", "Amount"])
+        sheet.append(["Advance/Surplus", str(total_final_amount - total_total_amount)])
+        sheet.append(["Total Hold Amount", str(Decimal(total_hold_amount))])
+        sheet.append(["Amount With TDS", str(total_tds_amount)])
+
+        # Auto adjust column widths
+        for col in sheet.columns:
+            max_length = 0
+            col_letter = openpyxl.utils.get_column_letter(col[0].column)
+            for cell in col:
+                try:
+                    if cell.value:
+                        max_length = max(max_length, len(str(cell.value)))
+                except:
+                    pass
+            sheet.column_dimensions[col_letter].width = max_length + 2
 
         workbook.save(output_file)
         workbook.close()
+
     finally:
         cursor.close()
         connection.close()
-    from openpyxl.styles import Font
-
-    # Initialize totals
-    total_basic_amount = 0
-    total_tds_amount = 0
-    total_sd_amount = 0
-    total_on_commission = 0
-    total_hold_amount = 0
-    total_final_amount = 0
-    total_total_amount = 0  # Sum of all Total Amounts from payment data
-
-    # Iterate through rows to calculate totals
-    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
-        try:
-            total_basic_amount += float(row[6] or 0)  # Basic_Amount
-            total_tds_amount += float(row[11] or 0)  # TDS_Amount
-            total_sd_amount += float(row[12] or 0)  # SD_Amount
-            total_on_commission += float(row[13] or 0)  # On_Commission
-            total_final_amount += float(row[-5] or 0)  # Final_Amount
-            total_total_amount += float(row[-2] or 0)  # Total_Amount (from payments)
-
-            # Sum of hold amounts (dynamically calculated based on hold_headers)
-            hold_start_col = len(base_headers)  # First column where hold types start
-            hold_end_col = hold_start_col + len(hold_headers)  # Last column where hold types end
-            total_hold_amount += sum(float(row[i] or 0) for i in range(hold_start_col, hold_end_col))
-
-        except ValueError:
-            continue  # Skip if non-numeric values cause errors
-
-    # Append the totals row at the bottom of the sheet
-    totals_row = [
-        "TOTAL", "", "", "", "", "",  # Empty values for non-numeric columns
-        total_basic_amount, "", "", "", "", total_tds_amount, total_sd_amount,
-        total_on_commission, "", "",  # Empty GST SD Amount
-    ]
-    if hold_headers:
-        totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
-
-    # Add empty placeholders for hold types
-    # totals_row += [total_hold_amount] + [""] * (len(hold_headers) - 1)
-
-    # Add totals for Final Amount and Total Amount
-    totals_row += [
-        total_final_amount, "", "", total_total_amount, ""  # UTR column remains empty
-    ]
-
-    # Append totals row to sheet
-    sheet.append([])
-    sheet.append(totals_row)
-    total_hold_amount=Decimal('0.00')
-    for d in invoices:
-        total_hold_amount = total_hold_amount + d.get('SD_Amount', Decimal('0.00')) + d.get('On_Commission',
-                                                                                                  Decimal(
-                                                                                                      '0.00')) + d.get(
-            'Hydro_Testing', Decimal('0.00'))
-    #new coded for summary chart added
-    for data in hold_amounts:
-        total_hold_amount = total_hold_amount + data.get('hold_amount', Decimal('0.00'))
-    print("Total Hold Amount after adding the hold amount ", total_hold_amount)
-
-
-    from datetime import datetime
-
-    # Add payment information
-
-    # Get today's date with weekday
-    today_date = datetime.today().strftime('%A, %Y-%m-%d')
-
-    # Add headers (optional)
-    sheet.append(["Contractor Name", contInfo["Contractor_Name"]])
-    sheet.append(["Date", today_date])
-    sheet.append(["Description", "Amount"])
-
-    # Add your values
-    sheet.append(["Advance/Surplus", str( total_final_amount - total_total_amount)])
-    sheet.append(["Total Hold Amount", str(total_hold_amount)])
-    sheet.append(["Amount With TDS", str(total_tds_amount)])
-    #new added code end here for summary chart
-
-    # Make the totals row bold
-    for cell in sheet[sheet.max_row]:
-        cell.font = Font(bold=True)
-
-    # Save workbook after modifications
-    workbook.save(output_file)
-    workbook.close()
 
     return send_from_directory(output_folder, f"Contractor_Report_{contractor_id}.xlsx", as_attachment=True)
 
