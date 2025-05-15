@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI chat</title>
+  <style>
+    body {
+        background-color: #f5f7fa;
+        font-family: Arial, sans-serif;
+    }
+
+    .chatbot-container {
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+
+    .chat-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: vertical;
+    }
+
+    button[type="submit"] {
+        align-self: flex-end;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    .chat-box {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .chat-message {
+        padding: 12px 15px;
+        border-radius: 8px;
+        max-width: 80%;
+        font-size: 16px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .user-message {
+        background-color: #e9f5ff;
+        align-self: flex-end;
+        border-left: 5px solid #007bff;
+    }
+
+    .ai-message {
+        background-color: #f1f1f1;
+        align-self: flex-start;
+        border-left: 5px solid #28a745;
+    }
+</style>
+</head>
+<body>
+<div class="chatbot-container">
+    <h1>AI Chatbot</h1>
+   <div class="chat-box">
+        {% if prompt %}
+            <div class="chat-message user-message">
+                <strong>You:</strong><br>
+                {{ prompt }}
+            </div>
+        {% endif %}
+
+        {% if response %}
+            <div class="chat-message ai-message">
+                <strong>AI:</strong><br>
+                {{ response }}
+            </div>
+        {% endif %}
+    </div>
+    <form method="POST" class="chat-form">
+        <textarea name="prompt" rows="4" placeholder="Type your message..." required></textarea>
+        <button type="submit">Send</button>
+    </form>
+
+
+</div>
+</body>
+{% endblock %}
+
