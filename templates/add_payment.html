@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Payment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/search_on_table.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/invoice.js') }}"></script>
+</head>
+<body>
+
+<div class="button-container">
+    <button id="addButton" class="action-button">Add</button>
+    <button id="displayButton" class="action-button">Display</button>
+</div>
+
+<div id="addForm" style="display: none;">
+    <h2>Add Payment</h2>
+
+    <form action="/add_payment" method="POST" onsubmit="showSuccessAlert(event)">
+        <div class="row1">
+            <div>
+                <label for="subcontractor">Subcontractor Name:</label>
+                <input type="text" id="subcontractor" name="subcontractor" required autocomplete="off"/>
+                <input type="hidden" id="subcontractor_id" name="subcontractor_id"/>
+                <div id="subcontractor_list" class="autocomplete-items"></div>
+            </div>
+        </div>
+
+        <label for="PMC_No">PMC No:</label><br>
+        <select id="PMC_No" name="PMC_No" required>
+            <option value="">Select PMC No</option>
+        </select><br><br>
+
+        <label for="invoice_No">Invoice No:</label><br>
+        <input type="number" step="0.01" id="invoice_No" name="invoice_No" required><br><br>
+
+        <label for="Payment_Amount">Amount:</label><br>
+        <input type="number" step="0.01" id="Payment_Amount" name="Payment_Amount" required><br><br>
+
+        <label for="TDS_Payment_Amount">TDS Amount:</label><br>
+        <input type="number" step="0.01" id="TDS_Payment_Amount" name="TDS_Payment_Amount" required><br><br>
+
+        <label for="total_amount">Total Amount:</label><br>
+        <input type="number" step="0.01" id="total_amount" name="total_amount" required><br><br>
+
+        <label for="utr">UTR:</label><br>
+        <input type="text" id="utr" name="utr"><br><br>
+
+        <button type="submit">Submit Payment</button>
+    </form>
+</div>
+
+<div id="successPopup" class="success-popup">
+    <i>&#10004;</i> Payment added successfully!
+</div>
+
+<div id="addTable" style="display: none;">
+    <div class="search-container">
+        <h2>Payment History</h2>
+        <input type="text" id="searchBar" placeholder="Searching..." onkeyup="searchTable()">
+    </div>
+    <table id="sortableTable" border="1">
+        <thead>
+        <tr>
+            <th class="sortable-header">Payment ID</th>
+            <th class="sortable-header">PMC No</th>
+            <th>Invoice No</th>
+            <th>Payment Amount</th>
+            <th>TDS Amount</th>
+            <th>Total Amount</th>
+            <th>UTR</th>
+            <th>Update</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for payment in payments %}
+        <tr>
+            <td>{{ payment[0] }}</td>
+            <td>{{ payment[1] }}</td>
+            <td>{{ payment[2] }}</td>
+            <td>{{ payment[3] }}</td>
+            <td>{{ payment[4] }}</td>
+            <td>{{ payment[5] }}</td>
+            <td>{{ payment[6] }}</td>
+            <td><a href="/edit_payment/{{ payment[0] }}"><img src="{{ url_for('static', filename='images/icons/pen_blue_icon.png') }}" alt="Edit" class="icon"></a></td>
+            <td><a href="/delete_payment/{{ payment[0] }}" onclick="return confirm('Are you sure you want to delete this payment?')"><img src="{{ url_for('static', filename='images/icons/bin_red_icon.png') }}" alt="Delete" class="icon"></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.getElementById("subcontractor").addEventListener("input", function () {
+    const query = this.value;
+    const list = document.getElementById("subcontractor_list");
+
+    if (query.length < 2) {
+        list.innerHTML = '';
+        return;
+    }
+
+    fetch(`/search_subcontractor?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            list.innerHTML = '';
+            data.results.forEach(item => {
+                const div = document.createElement("div");
+                div.setAttribute("data-id", item.id);
+                div.textContent = item.name;
+                list.appendChild(div);
+            });
+        });
+});
+
+document.getElementById("subcontractor_list").addEventListener("click", function (e) {
+    const selectedId = e.target.getAttribute("data-id");
+    const selectedName = e.target.textContent;
+
+    if (selectedId) {
+        document.getElementById("subcontractor_id").value = selectedId;
+        document.getElementById("subcontractor").value = selectedName;
+        document.getElementById("subcontractor_list").innerHTML = ""; // hide the list
+
+        console.log("Contractor id is", selectedId);
+
+        // Fetch PMC numbers
+        fetch(`/get_pmc_nos_by_subcontractor/${encodeURIComponent(selectedId)}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Fetched PMC Nos:", data.pmc_nos);
+                const pmcDropdown = document.getElementById("PMC_No");
+                pmcDropdown.innerHTML = "";
+
+                const defaultOption = document.createElement("option");
+                defaultOption.value = "";
+                defaultOption.textContent = "Select PMC No";
+                pmcDropdown.appendChild(defaultOption);
+
+                data.pmc_nos.forEach(pmc => {
+                    const option = document.createElement("option");
+                    option.value = pmc;
+                    option.textContent = pmc;
+                    pmcDropdown.appendChild(option);
+                });
+
+                if (data.pmc_nos.length === 0) {
+                    alert("No PMC Nos found for this subcontractor.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching PMC Nos:", error);
+                alert("Failed to fetch PMC numbers.");
+            });
+    }
+});
+</script>
+
+<script src="{{ url_for('static', filename='js/showSuccessAlert.js') }}"></script>
+</body>
+{% endblock %}

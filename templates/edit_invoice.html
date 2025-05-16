@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Edit Invoice</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/invoice.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style1.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+
+<div id="editForm">
+    <h2>Edit Invoice</h2>
+
+    <!-- Success Alert Box -->
+    <div id="invoiceSuccessAlert" class="success-alert" style="display:none;">
+        Invoice successfully updated!
+    </div>
+
+    <form id="invoiceForm" action="{{ url_for('edit_invoice', invoice_id=invoice.Invoice_Id) }}" method="POST">
+
+        <!-- Subcontractor Field -->
+        <div class="row1">
+            <div>
+                <label for="subcontractor">Subcontractor Name:</label>
+                <input class="form-control" list="subcontractor_list" id="subcontractor" name="subcontractor"
+                       value="{{ invoice.Contractor_Name }}" placeholder="Type to search..." required>
+                <input type="hidden" id="subcontractor_id" name="subcontractor_id" value="{{ invoice.Subcontractor_Id }}">
+                <datalist id="subcontractor_list"></datalist>
+            </div>
+        </div>
+
+        <!-- Village and PMC No Fields -->
+        <div class="row2">
+            <div>
+                <label for="village">Village Name:</label>
+                <input type="text" id="village" name="village" value="{{ invoice.Village_Name }}" required/>
+                <datalist id="village_list"></datalist>
+            </div>
+            <div>
+                <label for="pmc_no">PMC No:</label>
+                <input type="text" id="pmc_no" name="pmc_no" value="{{ invoice.PMC_No }}" required/>
+            </div>
+        </div>
+
+        <!-- Work Type and Invoice Details -->
+        <div class="row2">
+            <div>
+                <label for="work_type">Work Type:</label>
+                <input type="text" id="work_type" name="work_type" value="{{ invoice.Work_Type }}" required/>
+            </div>
+            <div>
+                <label for="invoice_details">Invoice Details:</label>
+                <textarea id="invoice_details" name="invoice_details" required>{{ invoice.Invoice_Details }}</textarea>
+            </div>
+        </div>
+
+        <!-- Invoice No and Invoice Date -->
+        <div class="row2">
+            <div>
+                <label for="invoice_no">Invoice No:</label>
+                <input type="text" id="invoice_no" name="invoice_no" value="{{ invoice.Invoice_No }}" required/>
+            </div>
+            <div>
+                <label for="invoice_date">Invoice Date:</label>
+                <input type="date" id="invoice_date" name="invoice_date" value="{{ invoice.Invoice_Date }}" required/>
+            </div>
+        </div>
+
+        <!-- Amount Fields -->
+        <div class="row3">
+            <div>
+                <label for="basic_amount">Basic Amount:</label>
+                <input type="number" step="0.01" id="basic_amount" name="basic_amount" value="{{ invoice.Basic_Amount }}" required/>
+            </div>
+            <div>
+                <label for="debit_amount">Debit Amount:</label>
+                <input type="number" step="0.01" id="debit_amount" name="debit_amount" value="{{ invoice.Debit_Amount }}" required/>
+            </div>
+            <div>
+                <label for="after_debit_amount">After Debit Amount:</label>
+                <input type="number" step="0.01" id="after_debit_amount" name="after_debit_amount" value="{{ invoice.After_Debit_Amount }}" required/>
+            </div>
+        </div>
+
+        <!-- GST, TDS, and Other Amounts -->
+        <div class="row3">
+            <div>
+                <label for="amount">Amount:</label>
+                <input type="number" step="0.01" id="amount" name="amount" value="{{ invoice.Amount }}" required/>
+            </div>
+            <div>
+                <label for="gst_amount">GST Amount:</label>
+                <input type="number" step="0.01" id="gst_amount" name="gst_amount" value="{{ invoice.GST_Amount }}" required/>
+            </div>
+            <div>
+                <label for="tds_amount">TDS Amount:</label>
+                <input type="number" step="0.01" id="tds_amount" name="tds_amount" value="{{ invoice.TDS_Amount }}" required/>
+            </div>
+        </div>
+
+        <!-- SD, On Commission, Hydro Testing -->
+        <div class="row3">
+            <div>
+                <label for="sd_amount">SD Amount:</label>
+                <input type="number" step="0.01" id="sd_amount" name="sd_amount" value="{{ invoice.SD_Amount }}" required/>
+            </div>
+            <div>
+                <label for="on_commission">On Commission:</label>
+                <input type="number" step="0.01" id="on_commission" name="on_commission" value="{{ invoice.On_Commission }}" required/>
+            </div>
+            <div>
+                <label for="hydro_testing">Hydro Testing:</label>
+                <input type="number" step="0.01" id="hydro_testing" name="hydro_testing" value="{{ invoice.Hydro_Testing }}" required/>
+            </div>
+        </div>
+
+       <!-- Hold Amount Section -->
+<div id="hold_amount_container">
+    {% set seen_types = [] %}
+    {% for hold in invoice.hold_amounts %}
+        {% if hold.hold_type not in seen_types %}
+            {% set _ = seen_types.append(hold.hold_type) %}
+            <div class="hold-amount-row">
+                <label for="hold_type_{{ loop.index }}">Hold Type:</label>
+                <input type="text" id="hold_type_{{ loop.index }}" name="hold_type[]" value="{{ hold.hold_type }}" required/>
+                <label for="hold_amount_{{ loop.index }}">Hold Amount:</label>
+                <input type="number" step="0.01" id="hold_amount_{{ loop.index }}" name="hold_amount[]" value="{{ hold.hold_amount }}" required/>
+                <button type="button" class="remove-hold-amount">Remove</button>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+        <div class="hold-row">
+            <button type="button" id="add_hold_amount" class="button">+ Add Hold Amount</button>
+        </div>
+
+        <!-- Final Amounts -->
+        <div class="row2">
+            <div>
+                <label for="gst_sd_amount">GST SD Amount:</label>
+                <input type="number" step="0.01" id="gst_sd_amount" name="gst_sd_amount" value="{{ invoice.GST_SD_Amount }}" required/>
+            </div>
+            <div>
+                <label for="final_amount">Final Amount:</label>
+                <input type="number" step="0.01" id="final_amount" name="final_amount" value="{{ invoice.Final_Amount }}" required/>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="button">Update</button>
+    </form>
+</div>
+
+<!-- JS for dynamic hold amount rows -->
+<script>
+$(document).ready(function() {
+    // Add new hold amount row
+    $("#add_hold_amount").click(function() {
+        const index = $("#hold_amount_container .hold-amount-row").length;
+        const newRow = `
+            <div class="hold-amount-row">
+                <label for="hold_type_${index}">Hold Type:</label>
+                <input type="text" id="hold_type_${index}" name="hold_type[]" required/>
+                <label for="hold_amount_${index}">Hold Amount:</label>
+                <input type="number" step="0.01" id="hold_amount_${index}" name="hold_amount[]" required/>
+                <button type="button" class="remove-hold-amount">Remove</button>
+            </div>
+        `;
+        $("#hold_amount_container").append(newRow);
+    });
+
+    // Remove hold amount row
+    $(document).on("click", ".remove-hold-amount", function() {
+        $(this).closest(".hold-amount-row").remove();
+    });
+
+    // Submit form via AJAX
+    $("#invoiceForm").submit(function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            type: "POST",
+            url: $(this).attr("action"),
+            data: $(this).serialize(),
+            success: function(response) {
+                if(response.status === "success") {
+                $("#invoiceSuccessAlert").fadeIn().delay(3000).fadeOut();
+                alert("Invoice updated successfully!");  // <-- Popup alert
+                }
+
+            },
+            error: function(xhr) {
+                alert("Error: " + xhr.responseJSON.message);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <title>Manage Hold Types</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/hold_types.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/search_on_table.js') }}"></script>
+</head>
+<body>
+
+<div class="button-container">
+    <button id="addButton" class="action-button">Add</button>
+    <button id="displayButton" class="action-button">Display</button>
+</div>
+
+<div id="addForm" style="display: none;">
+    <h2>Add Hold Types</h2>
+    <form id="holdTypeForm" method="POST">
+        <label>Enter Hold Amount Type:</label>
+        <input type="text" id="hold_type" name="hold_type" placeholder="Enter Type" required>
+        <span id="holdTypeMessage"></span>
+        <button type="submit" value="Add Hold Type" id="successPopup">Add Hold Type</button>
+    </form>
+</div>
+
+<div id="addTable" style="display: none;">
+    <h2>Hold Types List</h2>
+    <table id="sortableTable" border="1">
+        <tr>
+            <th>ID</th>
+            <th class="sortable-header">
+                Hold Type
+                <span class="sort-buttons">
+                    <span class="sort-asc">⬆️</span>
+                    <span class="sort-desc">⬇️</span>
+                </span>
+            </th>
+            <th>Update</th>
+            <th>Delete</th>
+        </tr>
+        {% for htd in Hold_Types_data %}
+        <tr>
+            <td>{{ htd['hold_type_id'] }}</td>
+            <td>{{ htd['hold_type'] }}</td>
+            <td><a href="{{ url_for('update_hold_type', id=htd['hold_type_id']) }}">Edit</a></td>
+            <td><button class="delete-button" data-id="{{ htd['hold_type_id'] }}">Delete</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/">Back to Dashboard</a>
+</div>
+</body>
+{% endblock %}
+

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel File</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/validateFileInput.js') }}"></script>
+</head>
+<body>
+
+        <h2>Upload Excel File</h2>
+        <div class="container">
+            <form action="/upload_excel_file" method="post" enctype="multipart/form-data"
+                  onsubmit="return validateFileInput()">
+                <input type="file" name="file" accept=".xlsx,.xls">
+                <br><br>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+
+
+</body>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>SubContractor</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/subcontractor.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/search_on_table.js') }}"></script>
+
+</head>
+<body>
+
+<!-- Button Container to Center Buttons -->
+<div class="button-container">
+    <button id="addButton" class="action-button">Add</button>
+    <button id="displayButton" class="action-button">Display</button>
+</div>
+
+<div id="addForm" style="display: none;">
+
+    <h2>Add Sub-Contractor</h2>
+    <form name="subcontractorForm" method="POST">
+
+        <label>Enter Contractor Name :</label>
+        <input type="text" id="Contractor_Name" name="Contractor_Name" required onkeyup="validateInput()"><br>
+
+        <label>Address :</label>
+<!--        <input type="text" name="Address" required>-->
+        <textarea id="Address" name="Address" required></textarea>
+        <br>
+
+        <label>Mobile No :</label>
+        <input type="text" id="Mobile_No" name="Mobile_No" required onkeyup="validateInput()" maxlength="10" placeholder="Ex - 9091012011">
+        <span class="error" id="mobileError" style="color: red;"></span><br>
+
+        <label>PAN No :</label>
+        <input type="text" id="PAN_No" name="PAN_No" required onkeyup="validateInput()" maxlength="10" placeholder="Ex - ABCDE1234F">
+        <span class="error" id="panError" style="color: red;"></span><br>
+
+        <label>Email :</label>
+        <input type="email" id="Email" name="Email" required onkeyup="validateInput()" placeholder="Ex - user@example.com">
+        <span class="error" id="emailError" style="color: red;"></span><br>
+
+        <label>Gender :</label>
+        <select name="Gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select><br>
+
+        <label>GST Registration Type :</label>
+        <input type="text" name="GST_Registration_Type" required><br>
+
+        <label>GST No :</label>
+        <input type="text" id="GST_No" name="GST_No" placeholder="Ex - 27AAACL5602N1ZE" required ><br>
+
+        <label>Generated Password :</label>
+        <input type="text" id="Contractor_password" name="Contractor_password" >
+        <span class="error" id="passwordError" style="color: red;"></span><br>
+
+        <button type="submit" id="submitBtn" disabled>Submit</button>
+    </form>
+
+</div>
+
+<div id="addTable" style="display: none;">
+    <div class="search-container">
+        <h2>Display SubContractor</h2>
+        <input type="text" id="searchBar" placeholder="Searching..." onkeyup="searchTable()">
+    </div>
+    <table id="sortableTable" border="1">
+
+        <tr>
+            <th>Contractor ID</th>
+            <th class="sortable-header">Contractor Name
+                <span class="sort-buttons">
+                        <span class="sort-asc">⬆️</span>
+                        <span class="sort-desc">⬇️</span>
+                    </span>
+
+            </th>
+            <th>Address</th>
+            <th>Mobile No</th>
+            <th>PAN No</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>GST Registration Type</th>
+            <th class="sortable-header">GST No
+                <span class="sort-buttons">
+                        <span class="sort-asc">⬆️</span>
+                        <span class="sort-desc">⬇️</span>
+                    </span>
+            </th>
+            <th>Update Contractor</th>
+            <th>Delete Contractor</th>
+        </tr>
+        {% for subc in subcontractor %}
+        <tr>
+            <td>{{ subc[0] }}</td>
+            <td>{{ subc[1] }}</td>
+            <td>{{ subc[2] }}</td>
+            <td>{{ subc[3] }}</td>
+            <td>{{ subc[4] }}</td>
+            <td>{{ subc[5] }}</td>
+            <td>{{ subc[6] }}</td>
+            <td>{{ subc[7] }}</td>
+            <td>{{ subc[8] }}</td>
+            <td>
+                <a href="{{ url_for('edit_subcontractor', id=subc[0]) }}">
+                    <img src="{{ url_for('static', filename='images/icons/pen_blue_icon.png') }}" alt="Edit"
+                         class="icon">
+                </a>
+            </td>
+            <td>
+                <a href="{{ url_for('deleteSubContractor', id=subc[0]) }}"
+                   onclick="return confirm('Are you sure you want to delete?')">
+                    <img src="{{ url_for('static', filename='images/icons/bin_red_icon.png') }}" alt="Delete"
+                         class="icon">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+</body>
+{% endblock %}

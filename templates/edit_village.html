@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Village</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="form-block">
+        <h2>Edit Village</h2>
+        <form id="editVillageForm" method="POST">
+            <label for="block_Id">Select Block:</label>
+            <select id="block_Id" name="block_Id" required>
+                <option value="" disabled>Select Block</option>
+                {% for block in blocks %}
+                    <option value="{{ block[0] }}" {% if block[0] == village_data[1] %}selected{% endif %}>
+                        {{ block[1] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="Village_Name">Enter Village Name:</label>
+            <input type="text" id="Village_Name" name="Village_Name" value="{{ village_data[0] }}" required>
+            <span id="villageMessage"></span>
+
+            <button type="submit">Update Village</button>
+        </form>
+    </div>
+
+    <!-- Flash Message (Hidden, used for JS popup) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div id="flash-message" data-category="{{ category }}" style="display:none;">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</div>
+
+<script>
+    window.onload = function () {
+        const flash = document.getElementById('flash-message');
+        if (flash && flash.innerText.trim() !== "") {
+            alert(flash.innerText);
+        }
+    };
+</script>
+</body>
+{% endblock %}

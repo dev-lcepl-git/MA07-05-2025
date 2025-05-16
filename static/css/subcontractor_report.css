@@ -1,0 +1,199 @@
+/* Global box-sizing for predictable sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+h2 {
+    text-align: center;
+    /* Fluid font size between 20px and 24px */
+    font-size: clamp(20px, 3vw, 24px);
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Form Styling */
+.info {
+    width: 60%;
+    max-width: 900px; /* optional max-width */
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 0 auto; /* center horizontally */
+}
+
+/* Responsive Form Layout */
+.row1,
+.row2,
+.row3 {
+    display: grid;
+    gap: 15px;
+}
+
+.row2,
+.row3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 6px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    /* Fluid font size between 14px and 16px */
+    font-size: clamp(14px, 1.5vw, 16px);
+}
+
+/* Table styling */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th,
+table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    /* Fluid font size between 10px and 14px */
+    font-size: clamp(10px, 1vw, 14px);
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #ddd;
+}
+
+.download-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 15px;
+    /* Fluid font size between 12px and 16px */
+    font-size: clamp(12px, 1.5vw, 16px);
+}
+
+.total-table {
+    width: 35%;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .info {
+        padding: 15px;
+        width: 80%;
+    }
+
+    .row2,
+    .row3 {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .invoice-table th,
+    .invoice-table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .info {
+        width: 90%;
+    }
+    .row1,
+    .row2,
+    .row3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .info {
+        padding: 10px;
+        width: 100%;
+    }
+
+    table th,
+    table td {
+        font-size: 10px;
+        padding: 6px;
+    }
+}
+
+@media (max-width: 360px) {
+    h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .info {
+        width: 100%;
+        padding: 8px;
+        gap: 10px;
+    }
+
+    input,
+    textarea,
+    select {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    table th,
+    table td {
+        font-size: 8px;
+        padding: 4px;
+    }
+
+    .total-table {
+        width: 100%;
+    }
+
+    .download-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}

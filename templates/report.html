@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Search</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/report.css') }}">
+    <script src="{{ url_for('static', filename='js/searchContractor.js') }}"></script>
+</head>
+<body>
+
+<div id="report" class="page">
+    <h2>Search Contractor Report</h2>
+    <div>
+        <form id="search-form">
+            <div class="row2">
+                <div>
+                    <label for="subcontractor_name">Subcontractor Name:</label>
+                    <input type="text" id="subcontractor_name" name="subcontractor_name">
+                </div>
+                <div>
+                    <label for="pmc_no">PMC No:</label>
+                    <input type="text" id="pmc_no" name="pmc_no">
+                </div>
+            </div>
+            <div class="row2">
+                <div>
+                    <label for="state">State:</label>
+                    <input type="text" id="state" name="state">
+                </div>
+                <div>
+                    <label for="district">District:</label>
+                    <input type="text" id="district" name="district">
+                </div>
+            </div>
+            <div class="row2">
+                <div>
+                    <label for="block">Block:</label>
+                    <input type="text" id="block" name="block">
+                </div>
+                <div>
+                    <label for="village">Village:</label>
+                    <input type="text" id="village" name="village">
+                </div>
+            </div>
+            <div class="row2">
+                <div>
+                    <label for="year_from">Year From:</label>
+                    <input type="date" id="year_from" name="year_from">
+                </div>
+                <div>
+                    <label for="year_to">Year To:</label>
+                    <input type="date" id="year_to" name="year_to">
+                </div>
+            </div>
+        </form>
+
+        <h2>Contractor List</h2>
+        <table border="1" id="result-table">
+            <thead>
+            <tr>
+                <th class="sortable">Contractor Name
+                    <select>
+                        <option value="">🔽</option>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </th>
+                <th>PMC No</th>
+                <th class="sortable">State
+                    <select>
+                        <option value="">🔽</option>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </th>
+                <th class="sortable">District
+                    <select>
+                        <option value="">🔽</option>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </th>
+                <th class="sortable">Block
+                    <select>
+                        <option value="">🔽</option>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </th>
+                <th class="sortable">Village
+                    <select>
+                        <option value="">🔽</option>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Results will be dynamically populated -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+{% endblock %}

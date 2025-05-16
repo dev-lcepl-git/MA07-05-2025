@@ -1,0 +1,114 @@
+2025-02-15 11:07:16,100 - INFO - Logging is set up.
+2025-02-15 11:07:16,100 - INFO - Logging is set up.
+2025-02-15 11:07:16,131 - WARNING -  * Debugger is active!
+2025-02-15 11:07:16,131 - WARNING -  * Debugger is active!
+2025-02-15 11:07:16,137 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:07:16,137 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:13:26,290 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "GET / HTTP/1.1" 200 -
+2025-02-15 11:13:26,290 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "GET / HTTP/1.1" 200 -
+2025-02-15 11:13:26,315 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/css/index.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,315 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/css/index.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,504 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,504 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,626 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/js/validateFileInput.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,626 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/js/validateFileInput.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,633 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/js/searchContractor.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,633 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[36mGET /static/js/searchContractor.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:26,950 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-15 11:13:26,950 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-15 11:13:28,623 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "GET / HTTP/1.1" 200 -
+2025-02-15 11:13:28,623 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "GET / HTTP/1.1" 200 -
+2025-02-15 11:13:28,933 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/css/index.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,933 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/css/index.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,952 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/js/validateFileInput.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,952 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/js/validateFileInput.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,954 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/js/searchContractor.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,955 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,954 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/js/searchContractor.js HTTP/1.1[0m" 304 -
+2025-02-15 11:13:28,955 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:31,608 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:13:31,608 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:13:31,639 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:31,639 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:13:31,649 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:13:31,649 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:13:31,967 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:13:31,967 - INFO - 127.0.0.1 - - [15/Feb/2025 11:13:31] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:15:01,349 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:01] "[31m[1mPOST /check_state HTTP/1.1[0m" 409 -
+2025-02-15 11:15:01,349 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:01] "[31m[1mPOST /check_state HTTP/1.1[0m" 409 -
+2025-02-15 11:15:21,783 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:21] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:21,783 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:21] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,127 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,127 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,151 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,151 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,391 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,391 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,440 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:22,440 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:22] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:15:24,266 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:24] "POST /add_state HTTP/1.1" 200 -
+2025-02-15 11:15:24,266 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:24] "POST /add_state HTTP/1.1" 200 -
+2025-02-15 11:15:25,418 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:15:25,418 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:15:25,716 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:15:25,716 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:15:25,749 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:15:25,749 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:15:25,752 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:15:25,752 - INFO - 127.0.0.1 - - [15/Feb/2025 11:15:25] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:46,338 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:16:46,338 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:16:48,798 - INFO - Logging is set up.
+2025-02-15 11:16:48,798 - INFO - Logging is set up.
+2025-02-15 11:16:48,843 - WARNING -  * Debugger is active!
+2025-02-15 11:16:48,843 - WARNING -  * Debugger is active!
+2025-02-15 11:16:48,847 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:16:48,847 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:16:52,045 - DEBUG - Fetched state data successfully.
+2025-02-15 11:16:52,045 - DEBUG - Fetched state data successfully.
+2025-02-15 11:16:52,054 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:16:52,054 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:16:52,076 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:16:52,076 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:16:52,078 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:52,078 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:52,377 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:52,377 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:52] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:54,758 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:54] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:16:54,758 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:54] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:16:54,992 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:54] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:16:54,992 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:54] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:16:55,016 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:55] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:16:55,016 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:55] "POST /check_state HTTP/1.1" 200 -
+2025-02-15 11:16:55,669 - INFO - State 'sss' added successfully.
+2025-02-15 11:16:55,669 - INFO - 'State 'sss added successfully.
+2025-02-15 11:16:55,670 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:55] "POST /add_state HTTP/1.1" 200 -
+2025-02-15 11:16:55,670 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:55] "POST /add_state HTTP/1.1" 200 -
+2025-02-15 11:16:57,235 - DEBUG - Fetched state data successfully.
+2025-02-15 11:16:57,235 - DEBUG - Fetched state data successfully.
+2025-02-15 11:16:57,239 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:16:57,239 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "GET /add_state HTTP/1.1" 200 -
+2025-02-15 11:16:57,263 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:16:57,263 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-15 11:16:57,483 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:57,483 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "[36mGET /static/images/icons/pen_blue_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:57,567 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:16:57,567 - INFO - 127.0.0.1 - - [15/Feb/2025 11:16:57] "[36mGET /static/images/icons/bin_red_icon.png HTTP/1.1[0m" 304 -
+2025-02-15 11:20:55,547 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:20:55,547 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:20:56,800 - INFO - Logging is set up.
+2025-02-15 11:20:56,800 - INFO - Logging is set up.
+2025-02-15 11:20:56,835 - WARNING -  * Debugger is active!
+2025-02-15 11:20:56,835 - WARNING -  * Debugger is active!
+2025-02-15 11:20:56,837 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:20:56,837 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:21:04,060 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:21:04,060 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:21:05,429 - INFO - Logging is set up.
+2025-02-15 11:21:05,429 - INFO - Logging is set up.
+2025-02-15 11:21:05,461 - WARNING -  * Debugger is active!
+2025-02-15 11:21:05,461 - WARNING -  * Debugger is active!
+2025-02-15 11:21:05,463 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:21:05,463 - INFO -  * Debugger PIN: 558-213-972
+2025-02-15 11:21:17,911 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
+2025-02-15 11:21:17,911 - INFO -  * Detected change in 'C:\\Users\\ADMIN\\PycharmProjects\\ManagementApplicationt\\main.py', reloading
