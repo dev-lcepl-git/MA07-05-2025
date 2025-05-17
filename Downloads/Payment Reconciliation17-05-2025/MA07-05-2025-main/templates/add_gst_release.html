@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add GST Release</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/search_on_table.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/invoice.js') }}"></script>
+</head>
+<body>
+
+<!-- Button Container to Center Buttons -->
+<div class="button-container">
+    <button id="addButton" class="action-button">Add</button>
+    <button id="displayButton" class="action-button">Display</button>
+</div>
+
+<div id="addForm" style="display: none;">
+    <h2>Add GST Release</h2>
+    <form action="/add_gst_release" method="POST" onsubmit="showSuccessAlert(event)">
+        <div class="row1">
+            <div>
+                <label for="subcontractor">Subcontractor Name:</label>
+                <input type="text" id="subcontractor" name="subcontractor" required autocomplete="off"/>
+                <input type="hidden" id="subcontractor_id" name="subcontractor_id"/>
+                <div id="subcontractor_list" class="autocomplete-items"></div>
+            </div>
+        </div>
+
+        <label for="PMC_No">PMC No:</label><br>
+        <select id="PMC_No" name="PMC_No" required>
+            <option value="">Select PMC No</option>
+            {% for option in pmc_options %}
+                <option value="{{ option.PMC_No }}">{{ option.PMC_No }} - {{ option.Subcontractor_Name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="invoice_No">Invoice No:</label><br>
+        <input type="text" id="invoice_No" name="invoice_No" required><br><br>
+
+        <label for="basic_amount">Amount:</label><br>
+        <input type="number" step="0.01" id="basic_amount" name="basic_amount" placeholder="₹ - 00.00" required><br><br>
+
+        <label for="final_amount">Total Amount:</label><br>
+        <input type="number" step="0.01" id="final_amount" name="final_amount" placeholder="₹ - 00.00" required><br><br>
+
+        <button type="submit">Submit GST Release</button>
+    </form>
+</div>
+
+<!-- Success Popup -->
+<div id="successPopup" class="success-popup">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <i>&#10004;</i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<div id="addTable" style="display: none;">
+    <div class="search-container">
+        <h2>GST Release History</h2>
+        <input type="text" id="searchBar" placeholder="Searching..." onkeyup="searchTable()">
+    </div>
+    <table id="sortableTable" border="1">
+        <thead>
+        <tr>
+            <th class="sortable-header">GST_Release_Id</th>
+            <th class="sortable-header">PMC_No</th>
+            <th>Invoice_No</th>
+            <th>Basic_Amount</th>
+            <th>Final_Amount</th>
+            <th>Update</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for gst_rel in gst_releases %}
+        <tr>
+            <td>{{ gst_rel[0] }}</td>
+            <td>{{ gst_rel[1] }}</td>
+            <td>{{ gst_rel[2] }}</td>
+            <td>{{ gst_rel[3] }}</td>
+            <td>{{ gst_rel[4] }}</td>
+            <td>
+                <a href="/edit_gst_release/{{ gst_rel[0] }}">
+                    <img src="{{ url_for('static', filename='images/icons/pen_blue_icon.png') }}" alt="Edit"
+                         class="icon">
+                </a>
+            </td>
+            <td>
+                <a href="/delete_gst_release/{{ gst_rel[0] }}"
+                   onclick="return confirm('Are you sure you want to delete this GST Release?')">
+                    <img src="{{ url_for('static', filename='images/icons/bin_red_icon.png') }}" alt="Delete"
+                         class="icon">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle subcontractor autocomplete
+    document.getElementById("subcontractor").addEventListener("input", function () {
+        const query = this.value;
+        const list = document.getElementById("subcontractor_list");
+
+        if (query.length < 2) {
+            list.innerHTML = '';
+            return;
+        }
+
+        fetch(`/search_subcontractor?query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                list.innerHTML = '';
+                data.results.forEach(item => {
+                    const div = document.createElement("div");
+                    div.setAttribute("data-id", item.id);
+                    div.textContent = item.name;
+                    list.appendChild(div);
+                });
+            });
+    });
+
+    // Handle subcontractor selection
+    document.getElementById("subcontractor_list").addEventListener("click", function (e) {
+        const selectedId = e.target.getAttribute("data-id");
+        const selectedName = e.target.textContent;
+
+        if (selectedId) {
+            document.getElementById("subcontractor_id").value = selectedId;
+            document.getElementById("subcontractor").value = selectedName;
+            document.getElementById("subcontractor_list").innerHTML = "";
+
+            // Update PMC dropdown for selected subcontractor
+            fetch(`/get_pmc_nos_by_subcontractor/${encodeURIComponent(selectedId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const pmcDropdown = document.getElementById("PMC_No");
+                    pmcDropdown.innerHTML = '<option value="">Select PMC No</option>';
+
+                    data.pmc_nos.forEach(pmc => {
+                        const option = document.createElement("option");
+                        option.value = pmc;
+                        option.textContent = pmc;
+                        pmcDropdown.appendChild(option);
+                    });
+                });
+        }
+    });
+});
+</script>
+
+<script src="{{ url_for('static', filename='js/showSuccessAlert.js') }}"></script>
+</body>
+{% endblock %}

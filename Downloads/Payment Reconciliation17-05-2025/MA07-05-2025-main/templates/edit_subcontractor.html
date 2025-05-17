@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Edit SubContractor</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<h2>Edit Sub-Contractor</h2>
+<form method="POST">
+    <input type="hidden" name="Contractor_Id" value="{{ subcontractor[0] }}">
+
+    <label>Enter Contractor Name :</label>
+    <input type="text" name="Contractor_Name" value="{{ subcontractor[1] }}" required><br>
+
+    <label>Address :</label>
+    <input type="text" name="Address" value="{{ subcontractor[2] }}" required><br>
+
+    <label>Mobile No :</label>
+    <input type="text" name="Mobile_No" value="{{ subcontractor[3] }}" required><br>
+
+    <label>PAN No :</label>
+    <input type="text" name="PAN_No" value="{{ subcontractor[4] }}" required><br>
+
+    <label>Email :</label>
+    <input type="email" name="Email" value="{{ subcontractor[5] }}" required><br>
+
+    <label>Gender :</label>
+    <select name="Gender" required>
+        <option value="Male" {% if subcontractor[6]=='Male' %}selected{% endif %}>Male</option>
+        <option value="Female" {% if subcontractor[6]=='Female' %}selected{% endif %}>Female</option>
+        <option value="Other" {% if subcontractor[6]=='Other' %}selected{% endif %}>Other</option>
+    </select><br>
+
+    <label>GST Registration Type :</label>
+    <input type="text" name="GST_Registration_Type" value="{{ subcontractor[7] }}" required><br>
+
+    <label>GST No :</label>
+    <input type="text" name="GST_No" value="{{ subcontractor[8] }}" required><br>
+
+    <label>Enter New Password :</label>
+    <input type="text" name="Contractor_password" value="{{ subcontractor[9] }}" required><br>
+
+    <button type="submit">Update</button>
+</form>
+
+
+</body>
+{% endblock %}
