@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <title>Edit District</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<h2>Edit District</h2>
+
+<form method="POST">
+    <label for="state_Id">State :</label>
+    <select name="state_Id" required>
+        <option value="" disabled>Select State</option>
+        {% for state in states %}
+        <option value="{{ state[0] }}" {% if state[0] == districtdata[1] %}selected{% endif %}>{{ state[1] }}</option>
+        {% endfor %}
+    </select>
+    <label>Enter District :</label>
+    <input type="text" name="district_Name" placeholder="District Name" value="{{ districtdata[0] }}" required>
+    <button type="submit">Update District</button>
+</form>
+
+
+</body>
+
+{% endblock %}

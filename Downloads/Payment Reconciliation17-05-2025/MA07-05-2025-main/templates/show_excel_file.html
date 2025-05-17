@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Excel Data</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/show_excel.css') }}">
+<!--    <script src="{{ url_for('static', filename='js/save_excel_file.js') }}"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ url_for('static', filename='js/save_data_success.js') }}"></script>
+
+</head>
+<body>
+<h1>Excel Data</h1>
+
+<h2>File Information:</h2>
+<ul>
+    <li>Subcontractor: {{ file_info['Subcontractor'] }}</li>
+    <li>State: {{ file_info['State'] }}</li>
+    <li>District: {{ file_info['District'] }}</li>
+    <li>Block: {{ file_info['Block'] }}</li>
+</ul>
+
+{% if errors %}
+<div class="errors">
+    <h2>Validation Errors:</h2>
+    <ul>
+        {% for error in errors %}
+        <li class="error">{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<h2>Data Table:</h2>
+<form id="saveForm">
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>Row No</th>
+                {% for var in variables %}
+                <th>{{ var }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row['Row Number'] }}</td>
+                {% for var in variables %}
+                <td><input type="text" value="{{ row[var] }}"/></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Hidden fields for other necessary information -->
+    <input type="text" name="subcontractor_data" value="{{ subcontractor_data['Contractor_Id'] }}">
+    <input type="text" name="state_data" value="{{ state_data['State_ID'] }}">
+    <input type="text" name="district_data" value="{{ district_data['District_ID'] }}">
+    <input type="text" name="block_data" value="{{ block_data['Block_Id'] }}">
+
+    <input type="text" name="file_info" value="{{ file_info }}">
+
+    <input type="text" name="hold_columns" value="{{ hold_columns }}">
+    <input type="text" name="hold_counter" value="{{ hold_counter }}">
+
+    <input type="text" name="variables[]" value="{{ variables }}">
+    <input type="text" name="data[]" value="{{ data }}">
+
+    <!--    {% for row in data %}-->
+    <!--        <input type="text" name="data[]" value="{{ row | join(',') }}">-->
+    <!--    {% endfor %}-->
+
+    <button type="submit" class="save-button">Save Data</button>
+</form>
+
+<a href="/" class="back-button">Back to Dashboard</a>
+
+</body>
+
+</html>

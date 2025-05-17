@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <title>Edit State</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<h2>Edit State</h2>
+
+<form method="POST">
+    <input type="text" name="state_Name" placeholder="State Name" value="{{ state[1] }}" required>
+    <button type="submit">Update</button>
+</form>
+
+
+</body>
+{% endblock %}

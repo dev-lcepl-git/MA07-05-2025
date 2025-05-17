@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Admin Profile</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="{{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('admin_profile') }}" method="POST" enctype="multipart/form-data">
+            <div class="profile-picture">
+<!--                <img id="profile-pic-preview" src="{{ url_for('static', filename='images/' + (profile['profile_picture'] or 'default.png')) }}" alt="Profile Picture" />-->
+                <input type="file" name="profile_picture" id="profile-pic-input" onchange="previewImage()">
+            </div>
+            <label>Username:</label>
+            <input type="text" name="username" value="{{ profile['user_name'] }}" required>
+            <label>Phone:</label>
+            <input type="tel" name="phone" value="{{ profile['mobile'] }}" required>
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ profile['email'] }}" required>
+            <label>New Password:</label>
+            <input type="password" name="new_password">
+            <label>Current Password (required for password change):</label>
+            <input type="password" name="current_password">
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+    <script>
+        function previewImage() {
+            const file = document.getElementById('profile-pic-input').files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-pic-preview').src = e.target.result;
+            };
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+{% endblock %}

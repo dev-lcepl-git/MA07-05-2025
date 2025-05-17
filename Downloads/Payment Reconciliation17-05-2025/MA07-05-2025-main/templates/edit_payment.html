@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Payment</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<h2>Edit Payment</h2>
+
+<form action="/edit_payment/{{ payment_data[0] }}" method="POST">
+    <!--    <label for="invoice_id">Invoice ID:</label><br>-->
+    <!--    <select id="invoice_id" name="invoice_id" required>-->
+    <!--        {% for invoice in invoices %}-->
+    <!--            <option value="{{ invoice[0] }}" {% if invoice[0] == payment_data[0] %}selected{% endif %}>-->
+    <!--                {{ invoice[1] }}-->
+    <!--            </option>-->
+    <!--        {% endfor %}-->
+    <!--    </select><br><br>-->
+
+    <label for="PMC_No">PMC No:</label><br>
+    <input type="number" step="0.01" id="PMC_No" name="PMC_No" value="{{ payment_data[1] }}" required><br><br>
+
+    <label for="invoice_No">Invoice No:</label><br>
+    <input type="number" step="0.01" id="invoice_No" name="invoice_No" value="{{ payment_data[2] }}" required><br><br>
+
+
+    <label for="Payment_Amount">Amount:</label><br>
+    <input type="number" step="0.01" id="Payment_Amount" name="Payment_Amount" value="{{ payment_data[3] }}"
+           required><br><br>
+
+    <label for="TDS_Payment_Amount">TDS Amount:</label><br>
+    <input type="number" step="0.01" id="TDS_Payment_Amount" name="TDS_Payment_Amount" value="{{ payment_data[4] }}"
+           required><br><br>
+
+    <label for="total_amount">Total Amount:</label><br>
+    <input type="number" step="0.01" id="total_amount" name="total_amount" value="{{ payment_data[5] }}"
+           required><br><br>
+
+    <label for="utr">UTR:</label><br>
+    <input type="text" id="utr" name="utr" value="{{ payment_data[6] }}"><br><br>
+
+    <button type="submit">Update Payment</button>
+</form>
+
+</body>
+{% endblock %}

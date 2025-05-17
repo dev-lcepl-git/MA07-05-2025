@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <title>Add State</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/state.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/search_on_table.js') }}"></script>
+</head>
+<body>
+
+<!-- Button Container to Center Buttons -->
+<div class="button-container">
+    <button id="addButton" class="action-button">Add</button>
+    <button id="displayButton" class="action-button">Display</button>
+</div>
+
+<div id="addForm" style="display: none;">
+    <h2>Add State</h2>
+    <form id="stateForm" method="POST">
+        <label>Enter State :</label>
+        <input type="text" id="state_Name" name="state_Name" placeholder="State Name" required>
+        <span id="stateMessage"></span>
+        <button type="submit" id="submitButton" disabled>Add State</button>
+    </form>
+</div>
+
+<div id="addTable" style="display: none;">
+    <div class="search-container">
+        <h2>Display States</h2>
+        <input type="text" id="searchBar" placeholder="Searching..." onkeyup="searchTable()">
+    </div>
+    <table id="sortableTable" border="1">
+        <tr>
+            <th>State ID</th>
+            <th class="sortable-header">
+                State Name
+                <span class="sort-buttons">
+                        <span class="sort-asc">⬆️</span>
+                        <span class="sort-desc">⬇️</span>
+                    </span>
+            </th>
+            <th>Update State</th>
+            <th>Delete State</th>
+        </tr>
+        {% for state in statedata %}
+        <tr>
+            <td>{{ state[0] }}</td>
+            <td>{{ state[1]}}</td>
+            <td>
+                <a href="{{ url_for('editState', id=state[0]) }}">
+                    <img src="{{ url_for('static', filename='images/icons/pen_blue_icon.png') }}" alt="Edit"
+                         class="icon">
+                </a>
+            </td>
+            <td>
+                <a href="{{ url_for('deleteState', id=state[0]) }}"
+                   onclick="return confirm('Are you sure you want to delete this state?')">
+                    <img src="{{ url_for('static', filename='images/icons/bin_red_icon.png') }}" alt="Delete"
+                         class="icon">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+
+{% endblock %}
